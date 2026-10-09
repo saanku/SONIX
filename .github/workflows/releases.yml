@@ -1,0 +1,47 @@
+name: Update release discovery
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release-feed
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/update-releases.mjs
+        env:
+          MUSICBRAINZ_CONTACT: https://github.com/${{ github.repository }}
+      - name: Save feed
+        run: |
+          git config user.name 'SONIX release updater'
+          git config user.email 'sonix-updater@users.noreply.github.com'
+          git add public/releases.json
+          git diff --staged --quiet || git commit -m 'Update music release discovery'
+          git push
+      - run: npm ci && npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: refresh
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

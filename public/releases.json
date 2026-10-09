@@ -1,0 +1,2314 @@
+{
+  "updatedAt": "2026-10-08T14:52:03.810Z",
+  "source": "MusicBrainz",
+  "window": {
+    "from": "2026-09-24",
+    "to": "2026-10-08"
+  },
+  "releases": [
+    {
+      "id": "d9375154-8b4b-49a5-9c3d-d3edfd237352",
+      "title": "The Descent",
+      "artist": "Skaphos",
+      "date": "2026-10-04",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "52e66d9b-cb18-4d23-888f-a121c9d9e3a8",
+      "title": "Cyberqueen",
+      "artist": "Chef Rust",
+      "date": "2026-10-03",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "887a7d8f-1c3b-4259-941d-0cc430d3929a",
+      "title": "Being Human",
+      "artist": "Scott Quinn",
+      "date": "2026-10-02",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "51dfc747-054e-4a5e-a8f3-210b855f7fd8",
+      "title": "Shoulder Season",
+      "artist": "Matt Mitchell Music Co.",
+      "date": "2026-09-26",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "20785056-8864-4a74-a2d2-0205df58e12b",
+      "title": "The Grind",
+      "artist": "ShyScarf",
+      "date": "2026-09-25",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "3577cfd8-d54b-4648-aca9-02236b8bc923",
+      "title": "Liebe Glaube Monster",
+      "artist": "Unheilig",
+      "date": "2026-03-13",
+      "language": "deu",
+      "type": "Album"
+    },
+    {
+      "id": "46f501b6-61d8-44da-9bfc-0b0a906fc1b6",
+      "title": "RAVEPOP",
+      "artist": "r u s s e l b u c k",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "f266bb87-57dd-470f-bb79-97e7eb47392d",
+      "title": "Together Again",
+      "artist": "John McCutcheon & Tom Paxton",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "abc9680b-ea2f-43d2-b625-fcc3322c1c9b",
+      "title": "Euphoria",
+      "artist": "Schiller",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "6ae666e6-eff1-49f9-a815-98722be49133",
+      "title": "Thunk",
+      "artist": "Jim Moginie & The Family Dog",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "34d3d1fe-7944-461f-a0c9-7d2104441109",
+      "title": "Electric Fantasy",
+      "artist": "Pierre Schott",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "54226f2a-385d-4d9f-8c03-f37d2668227e",
+      "title": "Shion. E.P",
+      "artist": "Rudo",
+      "date": "2026",
+      "language": "jpn",
+      "type": "EP"
+    },
+    {
+      "id": "5e78e3b8-3b93-4a35-b78f-392bcd508107",
+      "title": "Plays World Hits",
+      "artist": "Michiel van der Kuy",
+      "date": "2026",
+      "language": "fra",
+      "type": "Album"
+    },
+    {
+      "id": "af4ece5b-3174-426d-ad92-45090ab35b5e",
+      "title": "Eingenordet",
+      "artist": "Versengold",
+      "date": "2026",
+      "language": "deu",
+      "type": "Album"
+    },
+    {
+      "id": "c073640e-6385-4815-b43c-b99f75a8df5c",
+      "title": "Living Free (Live Manchester '75)",
+      "artist": "Don McLean",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "b577931e-be63-4e84-a7b2-e4c0764e9920",
+      "title": "Melodrama",
+      "artist": "LINA",
+      "date": "2026",
+      "language": "deu",
+      "type": "Album"
+    },
+    {
+      "id": "8deaeb34-e6b2-4159-b1de-5896d3e8545a",
+      "title": "The Power Station",
+      "artist": "The Power Station",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "1d680340-1c3a-49f9-bb3e-959b0741f594",
+      "title": "Convenience Store Gospel",
+      "artist": "Brodie Milner",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "809b9fbd-9dca-4327-bc33-a00df0850431",
+      "title": "Galaxia Tropical",
+      "artist": "Ranil Y Su Conjunto Tropical",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "def0724a-e3ba-4348-b30e-06caa81b08f4",
+      "title": "One Moment in Time: Live in the USA",
+      "artist": "Robin Trower",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "aca4150c-ffa4-4ead-9251-0774aa5db5db",
+      "title": "Warehouse 2026: 7.16.2025 Allianz Amphitheater At Riverfront, Richmond, VA",
+      "artist": "Dave Matthews Band",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "fa6eff89-357b-43af-b4bf-49ea9188cf62",
+      "title": "Warehouse 10 Volume 15",
+      "artist": "Dave Matthews Band",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "1bd2c700-5533-4dbd-8b3d-2050c6c7e1c4",
+      "title": "Pause for a moment",
+      "artist": "Dela Hüttner’s SwingThing",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "880b9321-8d33-44e9-b200-a9688d2a29b4",
+      "title": "Unpredictable Blooming",
+      "artist": "Swayglow",
+      "date": "2026",
+      "language": "und",
+      "type": "EP"
+    },
+    {
+      "id": "240607f1-aeeb-49f0-8f3a-55231a264602",
+      "title": "Genom Tid Och Rum - Lost Recordings",
+      "artist": "Hel",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "ed578194-4aa6-4100-a951-b57d40adc5d9",
+      "title": "Det Karolinska Arvet",
+      "artist": "Karolinerna",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "a7dea7b0-9b18-406e-bddb-e519bf6f0cab",
+      "title": "Genom Eld Och Aska",
+      "artist": "Ultima Thule & Hel",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "7f63a40d-96da-4f6a-a1c1-f8dc73648201",
+      "title": "Rouge Éternel – The Gilles Heart (27 Long Edition)",
+      "artist": "Rox Dj",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "08bf0471-f654-4957-8321-c66ed7e42f8a",
+      "title": "Sandokan (Rework 2025 by Rox Dj)",
+      "artist": "Rox Dj",
+      "date": "2026",
+      "language": "ita",
+      "type": "Single"
+    },
+    {
+      "id": "328ece14-b378-4723-b02a-11f8fc4b76e9",
+      "title": "Tu (2025 Instrumental Rave version)",
+      "artist": "Rox Dj",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "51b7cdb1-0d14-4997-bff4-4c618a9de9d9",
+      "title": "Dvorak Slavonic Dances - Brahms Hungarian Dances - Reiner Vienna Philharmonic (Redux)",
+      "artist": "Fritz Reiner & Reiner Vienna Philharmonic",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "1fb6ca33-1177-45c5-bddb-8193f30edb3d",
+      "title": "Good Girl",
+      "artist": "Paris Paloma",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "dc113487-3606-48ce-976d-37748757097c",
+      "title": "Не ври мне, что всё будет хорошо",
+      "artist": "Мёртвая Вера",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "901435e9-1c31-4a69-9fe9-288b4d510d99",
+      "title": "ЖЗЛ",
+      "artist": "Lacerate",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "ccca0f73-1b3d-4264-9fd8-68ae932c3130",
+      "title": "Monument",
+      "artist": "Crematory",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "5a3824cd-dc0b-4f7d-99a2-2b323addfcdb",
+      "title": "Naked Rat Dance",
+      "artist": "The Guilt",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "678bbf03-22b8-4342-bf02-7f0a0dcb353d",
+      "title": "The Great Adventure",
+      "artist": "DJ BoBo",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "48fd3a66-9b8c-4db5-8aa5-4a2fd576b837",
+      "title": "Bobbysocks",
+      "artist": "Bobbysocks",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "befbf7a5-11da-44a1-a023-3214b1016037",
+      "title": "Young & Cursed (Original Motion Picture Soundtrack)",
+      "artist": "Patrick O'Malley",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "40d13305-aa56-40d7-bc26-fd4499f172ec",
+      "title": "Bäring Nord",
+      "artist": "Völund Smed",
+      "date": "2026",
+      "language": "swe",
+      "type": "EP"
+    },
+    {
+      "id": "49056c96-f203-4fbc-bdd6-ddd1ab08180b",
+      "title": "Nordland",
+      "artist": "Völund Smed",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "6d9b8e74-6411-42db-864c-97ee089d17e7",
+      "title": "Viking",
+      "artist": "Völund Smed",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "7c28f27d-c7d4-4bc9-a0f7-25dfeef2c3d6",
+      "title": "Reflection (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "a5e07b55-4bbe-41f7-8ffe-4e770918d871",
+      "title": "Mixed Feelings (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "79c3285c-cb54-4c69-81c8-7610187210f5",
+      "title": "Home Sick (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "5170cae0-9018-4351-8e78-4b94b89a2489",
+      "title": "Without Direction (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "cd9cb216-de92-45c7-82b0-a26248ea75a3",
+      "title": "Dusk: An Album Of Covers (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "9c3d09b3-8faa-4d3c-a604-685672631096",
+      "title": "Yours Sincerely (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "444b27c0-63c8-45c8-a818-cf70d419f321",
+      "title": "Encore (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "ec09eb4f-5882-4b1c-90d6-05026a4b6a4c",
+      "title": "Vibrations: The Instrumental Album (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "cef9dc38-dd30-48f0-be48-37245138def3",
+      "title": "Fin (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "e44530d7-002e-4f29-b0f4-bb2824d17c15",
+      "title": "The Long Road (Remastered)",
+      "artist": "Beau Haustorfer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "6f7853c8-e90a-4886-9535-0a14fa328903",
+      "title": "The Stooges",
+      "artist": "The Stooges",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "fa67ee8c-80e0-4348-a13a-8d0a8f0c4961",
+      "title": "Vengeance",
+      "artist": "SILVERBACK 916",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "307ce63d-35f2-4b90-8001-d748b0282ed5",
+      "title": "Tenk Tenk",
+      "artist": "Sheex BA",
+      "date": "2026",
+      "language": "wol",
+      "type": "Album"
+    },
+    {
+      "id": "8cad04bc-f71b-4bbd-a518-77399a2352ad",
+      "title": "Miten asiat oikeesti on?",
+      "artist": "Liisa Akimof",
+      "date": "2026",
+      "language": "fin",
+      "type": "Album"
+    },
+    {
+      "id": "e178c01c-3f05-4070-9454-749687762747",
+      "title": "Fit For Use?",
+      "artist": "Blind System",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "c6358baf-1e01-4991-ab6e-cb5d794e222a",
+      "title": "Uprising",
+      "artist": "Bob Marley & The Wailers",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "60ef8bde-d4fc-41bb-a7ad-268dbd666cf2",
+      "title": "la patience n'existe pas",
+      "artist": "Natacha Tertone",
+      "date": "2026",
+      "language": "fra",
+      "type": "Album"
+    },
+    {
+      "id": "cea5026f-761e-49df-ad47-02f85c162a7e",
+      "title": "Se se on rokkii... ja sinfoniaa",
+      "artist": "Mikko Alatalo",
+      "date": "2026",
+      "language": "fin",
+      "type": "Album"
+    },
+    {
+      "id": "a7ea394a-8f63-4a4e-81ca-25fc1ad3c5df",
+      "title": "Çok Sabrettim",
+      "artist": "Faruk Özkan",
+      "date": "2026",
+      "language": "tur",
+      "type": "Release"
+    },
+    {
+      "id": "af3be962-8a11-417e-885c-1e328d6d34ce",
+      "title": "Contra Madre",
+      "artist": "Nomad War Machine & Susan Alcorn",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "4f123c9f-5775-4f3e-938c-6e4d90cd3944",
+      "title": "The Underground Hell Road",
+      "artist": "Iridal",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "74d81edb-75d4-44f4-bf72-71e3c433d96d",
+      "title": "\"Solo\" OMORI Piano Arrangement",
+      "artist": "OMORI",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "479d43da-44fa-4709-9488-c44c45d3dab9",
+      "title": "change of heart",
+      "artist": "lofi.samurai & farewell",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "cfadbe24-1395-41fb-83a0-03d8cdf08b02",
+      "title": "The Last Hit",
+      "artist": "2XKO & John Scherer",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "0587b7cb-1268-4f0f-aaaf-bf1417aec73a",
+      "title": "Uxury",
+      "artist": "Uxury",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "664a7c7e-a40a-4e24-bef8-30390638bdca",
+      "title": "See You Soon",
+      "artist": "Oilix",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "95d456c4-38a3-487f-b745-09c94b9cea83",
+      "title": "Blå-Gula Hjältar",
+      "artist": "Väringarna",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "7638d85a-2d7e-4450-af93-1f2f283ac8cb",
+      "title": "Fornstora Dagar",
+      "artist": "Thrudvang",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "effa33b3-053f-439d-bfcc-50fd7fd28e18",
+      "title": "Jump (Remixes)",
+      "artist": "Madonna",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "d4b20c77-82f8-40b0-ac0d-cea88b87e632",
+      "title": "Export to Excel",
+      "artist": "The 4 Big",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "12336df3-36e3-4f9d-ace5-3dd9ffbf2ef3",
+      "title": "Varg",
+      "artist": "Völund Smed",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "f6319d87-cc91-4654-8bee-79db8d857e5a",
+      "title": "Ultima Thule",
+      "artist": "Ultima Thule",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "38c915a8-858a-4ac1-9b04-13b2da60bed1",
+      "title": "Once I Was A Member Of Ultima Thule",
+      "artist": "Bruno Hansen",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "5550c1f3-4d41-4dfa-90c2-838fe3c94d18",
+      "title": "Deeper",
+      "artist": "Nor Kin4life, Caddy Pack & indigo onyxx",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "97b43a63-de47-4b8d-b92b-6b1fcb29161f",
+      "title": "Can You Hear Me?",
+      "artist": "Zoë de Priester",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "50568f3c-616c-4d19-a8f1-8151ecb6eb72",
+      "title": "Von Abseits",
+      "artist": "Doppelkopf",
+      "date": "2026",
+      "language": "deu",
+      "type": "Album"
+    },
+    {
+      "id": "f10db834-996c-4b1f-9563-98c7b9e80baa",
+      "title": "We Are Together Again",
+      "artist": "Bonnie “Prince” Billy",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "2a721e74-6b57-49eb-819f-185a2059060d",
+      "title": "SCALA!!! (Original Music by Barry Adamson)",
+      "artist": "Barry Adamson",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "236e3948-2a18-49f7-80ec-d6ce4815730d",
+      "title": "Baggage Claims",
+      "artist": "Daniel Son & Futurewave",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "e057fd1f-3941-474e-9006-42e13b32a7f7",
+      "title": "Art Book Two",
+      "artist": "Johnny Spykes",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "b406c4c6-a396-4d4e-b4fc-e5d6146a8974",
+      "title": "alpina",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "spa",
+      "type": "Single"
+    },
+    {
+      "id": "9e6ce49b-4fd0-4145-be6c-ad0d3eeb3522",
+      "title": "On the Road",
+      "artist": "Ah",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "1a14268a-e1d8-41d4-aaa9-8b0105f13f91",
+      "title": "El Palo",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "spa",
+      "type": "Single"
+    },
+    {
+      "id": "9de9f2fa-768b-496b-9f5a-7bdbfc2dc68b",
+      "title": "The Cardinal",
+      "artist": "Ann Reed",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "4940fd38-e9d9-4bcb-b113-2176fef04578",
+      "title": "Placid",
+      "artist": "Coloured Rocks",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "77934ae4-8cb9-4f71-8b85-f6479e406541",
+      "title": "Minneapolis 2026",
+      "artist": "Ann Reed",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "6c785de3-7f42-4d8f-98e3-5dab134d1cdc",
+      "title": "Paros",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "ell",
+      "type": "Single"
+    },
+    {
+      "id": "eed0703e-1587-4667-81df-c390c4f6a59a",
+      "title": "Cyclades",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "ell",
+      "type": "EP"
+    },
+    {
+      "id": "c73cb016-0a95-4c04-b3af-a37511e7fd33",
+      "title": "Amorgos",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "ell",
+      "type": "Single"
+    },
+    {
+      "id": "b29acb5e-fe78-4428-a476-dc9f57d82fee",
+      "title": "Mafalda",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "por",
+      "type": "Single"
+    },
+    {
+      "id": "d14d7dcd-831a-43d9-a3c3-f1185af47461",
+      "title": "Jazz Moods",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "477e856c-8bfb-4ae2-bd4a-4a927f861a6c",
+      "title": "Let You In",
+      "artist": "Marlon Funaki",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "f4eb53f9-7602-4b6d-bcf4-f945882e67e6",
+      "title": "Coming Down",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "4f238142-6170-486a-b56e-8595bad473f0",
+      "title": "Louisiana Belle",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "1e217a11-c90b-4369-83d9-37febdec669e",
+      "title": "Coelum",
+      "artist": "Made in M",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "9780b02a-8f64-4e16-adfb-10d88c06b91d",
+      "title": "Midnight Bath",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "39b58fe5-9a4b-44b6-a42c-3791dc89115a",
+      "title": "Appalachia",
+      "artist": "Emily Scott Robinson",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "4c4655c1-fb6a-4bcc-a038-5a61e520b5b5",
+      "title": "Enter the Sound",
+      "artist": "Dub Pistols & Freestylers",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "81337af6-7dfe-4ee4-ba62-d3e5352f1fd3",
+      "title": "(EN)LIGHTEN",
+      "artist": "Altrr",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "bf088ad1-0d70-4c62-948f-6693928a19d4",
+      "title": "Seems Like A Dream",
+      "artist": "FineLine",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "f8536d9f-b285-4ec7-add3-62d1d53ccd14",
+      "title": "What if I break up with u?",
+      "artist": "Iliona",
+      "date": "2026",
+      "language": "fra",
+      "type": "Album"
+    },
+    {
+      "id": "f9439c55-017f-4216-967e-baf95186428c",
+      "title": "The Clock Ticks On",
+      "artist": "Mostly Autumn",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "00292388-ab95-4285-8846-120dcfd95b71",
+      "title": "Perspective",
+      "artist": "Coloured Rocks",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "43cbde58-0d00-4414-9656-7ac7f15b5d2e",
+      "title": "Always Spring",
+      "artist": "Klaus Frank & Manuel Seng",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "3d5d9a16-c236-479b-9c8a-9cb2965eb0ba",
+      "title": "Destruction lyrique",
+      "artist": "No Suicide Act",
+      "date": "2026",
+      "language": "fra",
+      "type": "Album"
+    },
+    {
+      "id": "8c5b6568-d616-4e00-b3b9-2117642ef141",
+      "title": "ADHD",
+      "artist": "Mucha",
+      "date": "2026",
+      "language": "ces",
+      "type": "Album"
+    },
+    {
+      "id": "ab6a2009-1185-4131-9160-54b339827f33",
+      "title": "Road That Asks Nothing",
+      "artist": "taghei8",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "b162c625-aa9f-4006-8c56-9476b73b5161",
+      "title": "Still Breathing in the Dark",
+      "artist": "taghei8",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "48770649-bed4-4fcc-b123-46b9b7bbf64f",
+      "title": "Sleep in the Noise",
+      "artist": "taghei8",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "5d1c426d-0c04-4655-88ba-789893ab9242",
+      "title": "Everything",
+      "artist": "Malchicks",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "e57e7691-7e83-46f2-96cc-0ec180f55314",
+      "title": "Across the Water (Expanded)",
+      "artist": "Jadis",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "066e2cfa-3dcf-4e90-9770-f1f76dea63ff",
+      "title": "Coral",
+      "artist": "Cylle",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "4e05d16b-0198-4994-b1fe-78053c4c5055",
+      "title": "The Lighthouse Session II",
+      "artist": "Saturnus",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "ee43185d-de89-4967-bd54-2c0af6179b8a",
+      "title": "Ristiriita",
+      "artist": "kukkatalo",
+      "date": "2026",
+      "language": "fin",
+      "type": "Album"
+    },
+    {
+      "id": "2dd5f2ec-db52-4c8e-9f58-417df61ba832",
+      "title": "Touhou Project arranged instruments 14th Anniversary Collection",
+      "artist": "logical emotion",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "147d0f2c-9b26-4faf-8b5e-ba5e6c7a07b3",
+      "title": "pass that",
+      "artist": "farewell & wüsh",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "a001b101-2851-4862-a95d-1f8d21cf7725",
+      "title": "phases",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "ad98e853-7539-48cb-949b-42f77cd9f291",
+      "title": "wished upon",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "7f92fcb1-161b-488e-a4a4-0e85b1964228",
+      "title": "boston",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "07f6d3b2-7977-4c17-866c-6da9e7f978d4",
+      "title": "333",
+      "artist": "farewell & lofi.samurai",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "78c6bf05-0af0-4213-a1e8-1432d4872314",
+      "title": "nicotine",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "aca30a57-12bb-4a41-af25-59457048a844",
+      "title": "Big Cock",
+      "artist": "King Kurt",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "338d60e1-ad46-44c3-a5fa-b2b2d4daa554",
+      "title": "MEDABIRTH - The Beginning of a Star",
+      "artist": "MEDA",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "0cace6d9-1497-42e7-a1fd-0d88c857fb89",
+      "title": "Snow, Vol. 9",
+      "artist": "Wun Two",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "268d81bf-6af4-4bfd-b4ce-41a7e777c144",
+      "title": "Nothing Hurts Like Everything",
+      "artist": "Ourson",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "f70dcc4d-7fdc-4b0d-abd5-5d0238a4671d",
+      "title": "distillation",
+      "artist": "Storyinsoil",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "b04f86ef-0940-4b72-9650-f0ad44740494",
+      "title": "Bossa Sunset",
+      "artist": "digitalluc",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "1e2efe20-e09d-4a8c-b5b6-789296a0ef78",
+      "title": "Moloko Molotov",
+      "artist": "Moloko Molotov",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "2ec305a9-8ba8-4c69-a166-c63bedd43ef6",
+      "title": "Жёсткая неделька",
+      "artist": "СМЕХ",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "ae0ee368-10e9-4a28-bf7f-c073edfa6986",
+      "title": "patience",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "e45c6c1e-837a-4498-9089-2effbefc1a03",
+      "title": "ash that",
+      "artist": "farewell & Kavv",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "297b4ec4-e00c-4e72-8b1c-75b9df3905e9",
+      "title": "Final Cut",
+      "artist": "Coloured Rocks & Erwin Do",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "3c152849-436a-4775-84bb-92757d264d87",
+      "title": "Godskin Abomination",
+      "artist": "Visions of Disfigurement",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "f7a6a3d6-ce69-41a2-9e89-a2924ab12407",
+      "title": "In the Kingdom of North",
+      "artist": "Theosophy",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "ee928bdc-8e78-4925-9563-b1cc9d193147",
+      "title": "Fantasy",
+      "artist": "DJ Sabrina the Teenage DJ",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "3c6d69bb-f405-4312-badb-e98d75221478",
+      "title": "Convulsing senses",
+      "artist": "DJ Smailicona",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "4c88a86a-cc51-47f8-80b7-e6a8a387c72a",
+      "title": "Labor of Love",
+      "artist": "Tinsley Ellis",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "cb038ac1-0e50-4e55-b990-b28d016bc42b",
+      "title": "Tarot",
+      "artist": "Magenta",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "8889ce86-66c5-417f-85a1-221528771530",
+      "title": "Crown of Ash",
+      "artist": "Detartrated",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "9fc5027a-9927-4631-9d5e-aca0df8dbaff",
+      "title": "Feelin' Good",
+      "artist": "Lucas Knight",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "09f74bf3-4ca5-4ab8-ac5e-c7bf38086cf7",
+      "title": "Song Of The Saints (Deluxe)",
+      "artist": "Phil Wickham",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "23d0bcf0-0a08-4f77-8eb5-bfd36941e15e",
+      "title": "Rakasa",
+      "artist": "Anudeep Dev",
+      "date": "2026",
+      "language": "tel",
+      "type": "Album"
+    },
+    {
+      "id": "4fd2d28b-b82b-4c85-9601-9771c4e4498f",
+      "title": "Plays The Music Of Helmut Nierberle",
+      "artist": "Your Daily Jazz Trio",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "0ee1bcb0-a989-4e93-90b5-b47d658e30a1",
+      "title": "2026-02-22: Ryman Auditorium, Nashville, TN, USA",
+      "artist": "Billy Strings",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "774ce620-3e88-4827-8013-8f23a367a0ad",
+      "title": "Frihet",
+      "artist": "Ultima Thule",
+      "date": "2026",
+      "language": "swe",
+      "type": "Album"
+    },
+    {
+      "id": "f7663a70-2b6d-4ce8-a11b-b1951b8999e3",
+      "title": "Grandes Éxitos, Vol. 1",
+      "artist": "Maceratum",
+      "date": "2026",
+      "language": "spa",
+      "type": "Album"
+    },
+    {
+      "id": "457c4731-b031-48d8-beb5-d444406a117a",
+      "title": "1783",
+      "artist": "Aquakultre",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "bd44f15e-e89d-40f4-8c31-7ad6e3270fb6",
+      "title": "Postones",
+      "artist": "Vito Ricci, Rashied Ali, Byard Lancaster",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "9a9321a5-d329-475b-9b70-be18aa5d66ac",
+      "title": "Unrecorded.. queer",
+      "artist": "Linda Suolahti, Miikka Taipale",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "e814a162-4df3-4bf5-a038-adfc0bdd4cae",
+      "title": "leafblower",
+      "artist": "leafblower",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "2b72a87c-bc07-48df-8a3c-288f75bf9917",
+      "title": "Winter",
+      "artist": "Nicolas Kluzek",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "df6c2bfe-14ce-4e21-ab27-65e8099bcf4a",
+      "title": "The Super Mario Galaxy Movie: Original Motion Picture Soundtrack",
+      "artist": "Brian Tyler",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "51820d90-779f-4d94-8534-b18f8f1b9d2c",
+      "title": "Lost Wilson",
+      "artist": "NEKOB",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "d2457eeb-b79d-42b2-b0fb-9cbf295674c9",
+      "title": "Everything and Nothing",
+      "artist": "Danny Fenton & the Lightkeepers",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "8e781219-6749-4378-82e8-ea23da57250f",
+      "title": "Triological",
+      "artist": "Allison, Cardenas, & Nash",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "da96498e-93c6-4adf-8c7f-2ed2eac4e461",
+      "title": "snowfall",
+      "artist": "wüsh",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "e4d18e31-d754-4643-9961-04c4a08cd476",
+      "title": "shine on u",
+      "artist": "n o r m a l",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "bde951a1-9521-45b2-a9d9-3006f5764565",
+      "title": "Steven Universe: Volume 1 & 2",
+      "artist": "aivi & surasshu, Nick DeMayo, Hellen Jo, Ben Levin, Jeff Liu, Rebecca Sugar, Stemage & Roger Hicks",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "bbcbeed1-d3b2-408e-b75a-bec94a24f89d",
+      "title": "Tempestade",
+      "artist": "Sara Correia",
+      "date": "2026",
+      "language": "por",
+      "type": "Album"
+    },
+    {
+      "id": "517715f6-93f4-4b51-acde-c6585b69fe3d",
+      "title": "Everything / Gloomy Day (Post Mortem)",
+      "artist": "Darcy on the Line",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "1ec72f35-b40f-457b-ab09-21352382d03f",
+      "title": "The Herald of the Lightning and the Sun",
+      "artist": "Solar Cross",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "b2728006-5516-40a0-94c3-053e6bb3ec2d",
+      "title": "Eyes Closed",
+      "artist": "Leo Motta & Toti Cisneros",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "232e13a5-026b-4057-bb58-baec7a3ab40b",
+      "title": "Future Soul",
+      "artist": "Tedeschi Trucks Band",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "6fc43e00-ebd7-423a-a9e3-874684615ea3",
+      "title": "Bee and PuppyCat",
+      "artist": "Will Wiesenfeld",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "7f1938a9-b72d-4f18-8563-6a2d385c0fe2",
+      "title": "Plein Phare",
+      "artist": "Les Garde-Fous",
+      "date": "2026",
+      "language": "fra",
+      "type": "Album"
+    },
+    {
+      "id": "2c93a892-f035-487a-b3a0-bc27c9bf91f0",
+      "title": "Expression of the Soul",
+      "artist": "Pabzzz",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "a7d7e6f3-756f-4c62-8b9b-3bd200595c56",
+      "title": "This Is My Brain",
+      "artist": "Pat and Sean Kelly",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "a12a70b8-fe14-40f2-a6b6-54be142d38c2",
+      "title": "Snow, Vol. 8",
+      "artist": "Wun Two",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "bff7678b-1603-4e53-b797-36a057b7f124",
+      "title": "Rodeau Drive",
+      "artist": "Alex Froot",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "8bbce9e4-0a27-4cd9-9e9c-bd1f74f8c450",
+      "title": "dada i poopy myself",
+      "artist": "z9an",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "4eaf2993-2bfc-46a4-9b0f-d2bcb9c7af3d",
+      "title": "1",
+      "artist": "Wiatraki",
+      "date": "2026",
+      "language": "pol",
+      "type": "Album"
+    },
+    {
+      "id": "d20de737-5948-4d9c-a2f2-8554f8014ffa",
+      "title": "Kolo",
+      "artist": "KITKA Women's Vocal Ensemble",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "f559dadc-24dc-4a55-b372-af62a40c1f30",
+      "title": "Rockgrass Outlaws",
+      "artist": "Hayseed Dixie",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "56584f95-2bd2-44d9-ad14-20734f34eec7",
+      "title": "Ain’t No ’Bout‐a‐Doubt It",
+      "artist": "Graham Central Station",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "70413a6c-5a79-40cc-9e20-133f12c6c697",
+      "title": "The Complete Last Concert",
+      "artist": "The Modern Jazz Quartet",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "69ad73c6-dc0f-402d-b85b-74cadb135f43",
+      "title": "Heiß/Kalt",
+      "artist": "Paula Carolina",
+      "date": "2026",
+      "language": "deu",
+      "type": "EP"
+    },
+    {
+      "id": "0d457350-bc9f-4ac9-9f54-6b38a53c9b14",
+      "title": "The Electric Oud Man Speaks",
+      "artist": "Mehmet Ali Sanlıkol",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "1ad64011-1f97-4a55-9e64-be17a2980a22",
+      "title": "Yig'lamang ona",
+      "artist": "Azizjon Rahmonov",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "8c5a67fb-ac61-4392-a9db-6535516a71e1",
+      "title": "Yutqazdim bu sevgi jangida",
+      "artist": "Farruh Fazel",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "4e4ebe65-c385-42b5-836a-2234dc53dbcf",
+      "title": "Mr. Rock Steady",
+      "artist": "Ken Boothe",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "7a1a30ff-1d2c-4704-8f1e-80913aa5c802",
+      "title": "Tunji Oyelana & the Benders",
+      "artist": "Tunji Oyelana",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "86a2be56-9f0e-4f3e-8a4f-abf4a2e32a5c",
+      "title": "Ni un rastro queda",
+      "artist": "Escarnio",
+      "date": "2026",
+      "language": "spa",
+      "type": "Album"
+    },
+    {
+      "id": "216121ef-7378-4656-9a09-c50bca5b0e08",
+      "title": "Kereta Cinta",
+      "artist": "Ca 96",
+      "date": "2026",
+      "language": "ind",
+      "type": "Single"
+    },
+    {
+      "id": "315b9739-392d-4d86-a10d-606da702b8fd",
+      "title": "Tak Seindah Drakor",
+      "artist": "Ca 96",
+      "date": "2026",
+      "language": "ind",
+      "type": "Single"
+    },
+    {
+      "id": "04666410-1ceb-431b-954c-952ff7cc20db",
+      "title": "Cinta Gang Sebelah",
+      "artist": "Ca 96",
+      "date": "2026",
+      "language": "ind",
+      "type": "Single"
+    },
+    {
+      "id": "9daf4326-5d3b-46ac-9014-e795d2ae2455",
+      "title": "Ink Cycle",
+      "artist": "Vers Derrière Les Mots",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "10a4721e-6ad6-4780-873c-4b34b031449a",
+      "title": "La respuesta | Hablando de ti",
+      "artist": "Los Gatos Salvajes",
+      "date": "2026",
+      "language": "spa",
+      "type": "Single"
+    },
+    {
+      "id": "ace59bd4-7456-4237-a29c-f69b75a2e890",
+      "title": "Estoy llorando | Eres mala",
+      "artist": "Los Gatos Salvajes",
+      "date": "2026",
+      "language": "spa",
+      "type": "Single"
+    },
+    {
+      "id": "5e727d06-fc74-4930-b140-5adccaa84214",
+      "title": "Boleto para pasear | Harás lo que te pida",
+      "artist": "Los Gatos Salvajes",
+      "date": "2026",
+      "language": "spa",
+      "type": "Single"
+    },
+    {
+      "id": "cc2bc92a-e093-478b-87b3-7fc67e852086",
+      "title": "Burning Desires",
+      "artist": "Chris Peters aka TruSupreme",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "7f785f7f-3ef9-404f-9a3d-e5b5d444463d",
+      "title": "Devotion Of The Cursed",
+      "artist": "Wormsden",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "70f5f1ad-3016-4b0a-bd3a-2fc1f84f4186",
+      "title": "Flicker in the Rearview",
+      "artist": "L'Homme Absurde",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "47784310-d6dd-4793-b9bb-e192de70ea3a",
+      "title": "What Never Died",
+      "artist": "Deathwind",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "7215f2e2-bf24-43bc-879e-f15cba29bd17",
+      "title": "Зверобой",
+      "artist": "Vintergata",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "8ad1424b-31d4-481b-80b8-c93c804de5f1",
+      "title": "Таилища Русской Земли",
+      "artist": "Drakon",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "ca06d2f8-32d9-45c0-9eea-8d5e48a986e8",
+      "title": "Славянин",
+      "artist": "Кметъ",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "33f88bd0-db4b-424b-a09f-1f04bdec42a2",
+      "title": "Парад Нечистой Силы. Часть Вторая",
+      "artist": "Кувалда",
+      "date": "2026",
+      "language": "rus",
+      "type": "Album"
+    },
+    {
+      "id": "32f50f77-7f25-4886-97b6-6eb74ffcf1b9",
+      "title": "Dear Mama",
+      "artist": "Oilix",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "d00c135f-da58-4a32-aea5-d8e052e0761b",
+      "title": "Mahakala",
+      "artist": "Mahakala",
+      "date": "2026",
+      "language": "hin",
+      "type": "Album"
+    },
+    {
+      "id": "358e1226-20ba-4f02-abca-ebe540d02301",
+      "title": "Sweet Release",
+      "artist": "BYAS",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "c535888f-578b-4bc7-be47-b14d99475d30",
+      "title": "Oyo Kita Yo",
+      "artist": "BYAS",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "575af864-5424-4d1e-9c7d-e88fa4facc3f",
+      "title": "Solara",
+      "artist": "BYAS",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "38023b10-abe5-4056-848d-277e355dc3c5",
+      "title": "In The Loop",
+      "artist": "BYAS",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "9e74fc1e-04cc-4427-8ac4-9b1453d8747b",
+      "title": "Pyrocracy",
+      "artist": "Insanity",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "3f6f12c7-899c-4a7a-a8ec-3c6dce0afc8a",
+      "title": "3 AM Drift",
+      "artist": "TheVeilers",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "b35ca3ce-308c-4a17-8b22-636237dddf87",
+      "title": "England Belongs To Me",
+      "artist": "Cock Sparrer",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "420069c2-84b5-4387-aa9b-c50835aa5f1b",
+      "title": "CN Collection II",
+      "artist": "Pop! not soda.",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "87718145-4cd6-4ef2-b052-f1db9f2b5b03",
+      "title": "Somehow",
+      "artist": "Pop! not soda.",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "99696f1f-d360-4ce1-a524-fa56fa941c63",
+      "title": "BANANA SONG",
+      "artist": "Pop! not soda.",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "f1a2552a-ec4f-4bd0-95da-09274a6d71ae",
+      "title": "Johnny Test (Season One)",
+      "artist": "Pop! not soda.",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "017c16c7-e4c5-488d-8bde-d2e41a15096f",
+      "title": "Nick Collection 2",
+      "artist": "Pop! not soda.",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "f38d1b6c-17fc-47de-abf2-d7b62e0a67ff",
+      "title": "Anime Collection",
+      "artist": "Pop! not soda.",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "14505698-aafa-4230-9ee1-7aa2322782e4",
+      "title": "Rest",
+      "artist": "악토버",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "02df058b-1cf5-4449-bfae-1a7c741587c8",
+      "title": "A Substitute For Light",
+      "artist": "Diorama",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "05b8a960-e05c-473a-8c3f-931e41986d24",
+      "title": "The Path Doesn’t End",
+      "artist": "NEKOB",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "800da234-2388-4061-9578-38a16031dbc9",
+      "title": "2026-02-10: Exploreasheville.com Arena, Asheville, NC, USA",
+      "artist": "Billy Strings",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "83fec871-19e8-448f-87d7-1ba3877fb47a",
+      "title": "Hold on Tight",
+      "artist": "Maurice From The North Country",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "f4a9a05b-c146-410e-8161-4d10af2f6bfa",
+      "title": "Unity",
+      "artist": "Pariah",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "60ca1f84-2c2c-4344-a728-bb9ab6bc560c",
+      "title": "Blaze of Obscurity",
+      "artist": "Pariah",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "b98734d8-0222-4351-bb13-846a0134d065",
+      "title": "The Kindred",
+      "artist": "Pariah",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "85f88a58-6c9e-46ff-8c51-65a386179d3e",
+      "title": "Return to the Mothership",
+      "artist": "Jamie Wyman",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "f74639ab-d873-4b1b-8349-d27b2c722b3b",
+      "title": "Le Cœur, le cul",
+      "artist": "Picon mon amour",
+      "date": "2026",
+      "language": "fra",
+      "type": "Album"
+    },
+    {
+      "id": "23ac5fb9-5b61-4d60-bbe8-d7309ba2db57",
+      "title": "Miles From Home (Music From The Motion Picture)",
+      "artist": "Robert Folk",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "9224d2a0-9055-42d7-ac6f-00f957a17b7c",
+      "title": "Yissy García & Bandancha Live at The Black Room Sessions",
+      "artist": "Yissy García",
+      "date": "2026",
+      "language": "spa",
+      "type": "Release"
+    },
+    {
+      "id": "ead70ef8-8fdb-48fe-9a7d-d5446c906058",
+      "title": "Operation Archangel",
+      "artist": "Vatican Shadow",
+      "date": "2026",
+      "language": "eng",
+      "type": "Release"
+    },
+    {
+      "id": "52d85cb2-0d02-49c3-9985-d7926f091614",
+      "title": "IT WASNT A PHASE IT LIVES IN MY VEINS",
+      "artist": "d3r",
+      "date": "2026",
+      "language": "und",
+      "type": "Single"
+    },
+    {
+      "id": "3f69fa1f-11c0-4beb-855c-1c629a95926e",
+      "title": "BODY 25",
+      "artist": "MoMA Ready",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "f7c8fa42-2851-4859-b1c5-a681d6d91f5b",
+      "title": "piano portfolio",
+      "artist": "izzy mardin-weir ᮄᮐ᮪ᮐ᮪ᮚ᮪",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "82334e1e-ba8d-44b8-ae2d-786f80b70201",
+      "title": "Lifelines",
+      "artist": "Chris Norman",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "5a6848d0-3749-4d0d-b517-80aee572f95c",
+      "title": "Live at the End",
+      "artist": "Pet Deity",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "6efd36ae-45c6-4a15-afd0-4601659b9fe3",
+      "title": "FLAVOR",
+      "artist": "BASSBABE",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "c5666df0-0252-40ee-9640-db0aba9e7f1a",
+      "title": "isle royal mining co.",
+      "artist": "isle royal mining co.",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "ec400e0a-de63-4a26-b32e-608a736dc7ea",
+      "title": "Tambourine",
+      "artist": "Lenny Lenny",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "53b59572-7ef3-4576-865e-870dc1f391ac",
+      "title": "Agüizotes, Vol. 1 (Banda Sonora)",
+      "artist": "TheVeilers",
+      "date": "2026",
+      "language": "spa",
+      "type": "Album"
+    },
+    {
+      "id": "70e08f55-da3c-47a5-9539-89609957d2ed",
+      "title": "SHARDS",
+      "artist": "Tuv",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "86d57c58-3ea2-4051-b98f-32818a944736",
+      "title": "Magnifiquement Beau",
+      "artist": "Antoine Delie",
+      "date": "2026",
+      "language": "fra",
+      "type": "EP"
+    },
+    {
+      "id": "ac17e572-5217-4584-a94c-f667585855da",
+      "title": "CD 4",
+      "artist": "Mc Caco",
+      "date": "2026",
+      "language": "spa",
+      "type": "Album"
+    },
+    {
+      "id": "3ec1ecb5-f32f-4051-a1ee-1edf1fb002ed",
+      "title": "Asphalt Veins",
+      "artist": "Michael Webster",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "49aacde9-20cb-4964-9f3c-0a8f7990a3fd",
+      "title": "Clouds",
+      "artist": "Boundary Operator",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "e9911328-53ad-43d0-b413-3533a937d449",
+      "title": "La Peor Semana del Año",
+      "artist": "FATAL",
+      "date": "2026",
+      "language": "spa",
+      "type": "Album"
+    },
+    {
+      "id": "a80884d4-a184-4d72-b752-2f664b3d4672",
+      "title": "Amarga Navidad",
+      "artist": "Alberto Iglesias",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "5e76ba84-be3f-4874-95f5-657527d65255",
+      "title": "All the Feels",
+      "artist": "Lofi Wil",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "d377d606-2ffe-417f-baa0-520547f66507",
+      "title": "sapienza",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "ita",
+      "type": "Album"
+    },
+    {
+      "id": "ad3a91a6-6173-434b-9752-a6c5a3ef8bda",
+      "title": "annegare",
+      "artist": "farewell",
+      "date": "2026",
+      "language": "ita",
+      "type": "Single"
+    },
+    {
+      "id": "99a23960-3915-4940-b9d1-66e41d293415",
+      "title": "Perf Cycle Blues",
+      "artist": "The 4 Big",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "c749f9a8-08ce-4e60-b093-4ae68a1bd4bb",
+      "title": "Distracted",
+      "artist": "Thundercat",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "5241f9a8-5f68-4e3f-8b25-89b8acef3589",
+      "title": "TASTE",
+      "artist": "Tuv",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "335c7064-7a89-4758-8608-9be4706fce1d",
+      "title": "Saison Orange",
+      "artist": "Quentin Dujardin",
+      "date": "2026",
+      "language": "und",
+      "type": "Album"
+    },
+    {
+      "id": "985b9a2d-08bd-4312-bdbd-efce9ee7f80a",
+      "title": "That Summer Feeling",
+      "artist": "Oilix",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "63b8680a-4bfd-478e-9745-ad512aba77f6",
+      "title": "Кыштак четинде",
+      "artist": "Jeedesh",
+      "date": "2026",
+      "language": "rus",
+      "type": "Single"
+    },
+    {
+      "id": "f508b28c-c980-4fcf-ac54-5438896a235e",
+      "title": "Nazdar Bazar 12",
+      "artist": "Little Guy, FKY",
+      "date": "2026",
+      "language": "und",
+      "type": "EP"
+    },
+    {
+      "id": "af596d96-b2ba-4ce6-ba26-e16e78acb8f2",
+      "title": "THE FIFTH",
+      "artist": "Coast Contra",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "be59b5c1-5ba5-48a9-b412-852b6cd8db4d",
+      "title": "fasi",
+      "artist": "farewell & kavv",
+      "date": "2026",
+      "language": "ita",
+      "type": "Single"
+    },
+    {
+      "id": "6f62752b-3088-49f1-9fab-739cbe1471d9",
+      "title": "ferndell",
+      "artist": "ok seashells",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "bece503b-b779-419f-a16c-9eebb4251c42",
+      "title": "Au Clair De Lune",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "Album"
+    },
+    {
+      "id": "11b08a79-596e-4603-b9e5-2b6125276c07",
+      "title": "Alice In Wonderbox (Original Stage Soundtrack)",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "Album"
+    },
+    {
+      "id": "5e15fbb4-4ba6-46f0-a69c-dfa7f4ba167b",
+      "title": "Music Composed For The American Meme",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "Album"
+    },
+    {
+      "id": "aec5b54c-a358-4f83-a53a-c9cd4b83e884",
+      "title": "Alices (Original Motion Picture Soundtrack)",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "Single"
+    },
+    {
+      "id": "9f46a2d6-a00d-4f61-8181-3096a0651c93",
+      "title": "Bunuelesque",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "2b1570b6-e9f4-4503-885f-f30a4618fe6a",
+      "title": "Enracinées",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "fra",
+      "type": "Single"
+    },
+    {
+      "id": "8dd923ff-13e3-4886-a1ad-d7848225ea11",
+      "title": "Music Composed for All You Need Is Blood",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "Single"
+    },
+    {
+      "id": "22e4aa46-9f9e-4c32-9713-c7494e16f9aa",
+      "title": "Gig Work (Music Composed For)",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "EP"
+    },
+    {
+      "id": "36ba53bd-fbc0-434d-b7fa-bb596961104f",
+      "title": "Avant Notre Heure (Original Motion Picture Soundtrack)",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "EP"
+    },
+    {
+      "id": "a2898ae5-f911-4e30-963c-ece079d6601f",
+      "title": "The Alchemist",
+      "artist": "ØCINZENTØ",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "b24fbce8-9c84-4c3a-b789-67375188d7f8",
+      "title": "Carbonize",
+      "artist": "ØCINZENTØ",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "b3edcf20-f47a-4a3e-9807-4828cd6f8aba",
+      "title": "New World Order",
+      "artist": "ØCINZENTØ",
+      "date": "2026",
+      "language": "mul",
+      "type": "Album"
+    },
+    {
+      "id": "40c6421f-ee57-474b-88b5-586cd08f483c",
+      "title": "bitches blues",
+      "artist": "Hedvig Mollestad Weejuns",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "42ffb461-8f79-46ab-9c7d-4e8d2be9f0c2",
+      "title": "Demonic Sceptre",
+      "artist": "Nuctemeron",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "678cd065-a43d-430c-8280-eb1686e0f61a",
+      "title": "Vital Spark",
+      "artist": "Dave Holland, Norma Winstone & London Vocal Project",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "c997f8e0-03ac-4433-955f-9f5e5e88a19f",
+      "title": "Awaken the Dark Age",
+      "artist": "Arbor",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "3febfdf6-8977-4b9e-8d4a-bd1290df67ee",
+      "title": "Parano 01 Reissue",
+      "artist": "Labo 14",
+      "date": "2026",
+      "language": "und",
+      "type": "Release"
+    },
+    {
+      "id": "2e933c79-1fff-407e-a23d-655a9517d51d",
+      "title": "The Winterlong",
+      "artist": "God Macabre",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "ce4cd37b-e0c1-4462-9f06-d458d7e809f6",
+      "title": "LA",
+      "artist": "Diviners, The Palm Tree Boy ,Eliine,Dust Walker",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "c5f9b8e4-4a81-4c5c-b869-3b9c9d2518b9",
+      "title": "Running With The Fire",
+      "artist": "VLX,Eliine",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "53af95b8-85cc-4be4-ae1b-03ae8a09c96b",
+      "title": "Music Composed For Alter Ego",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "EP"
+    },
+    {
+      "id": "0172634f-82a9-49b4-8114-ad38c7d343e4",
+      "title": "Andromaque (Original Stage Soundtrack)",
+      "artist": "Robinson Senpauroca",
+      "date": "2026",
+      "language": "zxx",
+      "type": "Album"
+    },
+    {
+      "id": "b7788ecb-5a74-492a-ae3e-184a385f1bbc",
+      "title": "Time With You",
+      "artist": "HeɅven,Bayshore Court,Eliine",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "726ba94e-04fb-49d6-bed8-fd3cefab8d31",
+      "title": "Dog Man Star",
+      "artist": "NERVE",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "df1fce86-b12e-4773-8ca4-a48ccd24db2c",
+      "title": "World War Dinosaur",
+      "artist": "Victorius",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    },
+    {
+      "id": "4e08cc8c-758e-4c3e-af94-865545c6dcbf",
+      "title": "Bonnie & Clyde",
+      "artist": "Upceak",
+      "date": "2026",
+      "language": "ron",
+      "type": "Single"
+    },
+    {
+      "id": "f24f2366-456a-4acb-88b0-ab341fa82cfa",
+      "title": "Better Off Dead",
+      "artist": "Divide Music",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "56e2e044-7246-4af6-9c7a-0f2125606007",
+      "title": "Dreamer’s Disease",
+      "artist": "Zen‐Zin & yeyts.",
+      "date": "2026",
+      "language": "eng",
+      "type": "EP"
+    },
+    {
+      "id": "15eaefd5-fdf2-45b7-9e6a-c279216be09d",
+      "title": "HATE!",
+      "artist": "Divide Music",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "ef0ec8af-f87f-48bd-9067-6cb9916d1055",
+      "title": "Let It Rot",
+      "artist": "Divide Music",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "18455a81-4780-4a64-b13c-680867b010ab",
+      "title": "Fragile Heart",
+      "artist": "bunnycat",
+      "date": "2026",
+      "language": "eng",
+      "type": "Single"
+    },
+    {
+      "id": "816e22dc-b6c9-44c4-99d5-8eda0ecf2286",
+      "title": "Constellation",
+      "artist": "Oliver Lieb",
+      "date": "2026",
+      "language": "eng",
+      "type": "Album"
+    }
+  ]
+}

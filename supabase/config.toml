@@ -1,0 +1,3 @@
+[functions.musicbrainz]
+# Public, read-only metadata. Publishable keys are not legacy JWTs.
+verify_jwt = false
