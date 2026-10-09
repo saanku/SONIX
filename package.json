@@ -7,8 +7,7 @@
     "dev": "vite --host 127.0.0.1 --configLoader runner",
     "build": "vite build --configLoader runner",
     "preview": "vite preview --host 127.0.0.1 --configLoader runner",
-    "test": "node --test tests/*.test.js",
-    "update-releases": "node scripts/update-releases.mjs"
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

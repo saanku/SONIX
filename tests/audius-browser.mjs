@@ -6,6 +6,7 @@ const browser=await chromium.launch({headless:true,executablePath:process.env.BR
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ const removedRequests=[];page.on('request',request=>{if(/musicbrainz|releases\.json/i.test(request.url()))removedRequests.push(request.url());});
  await page.route('https://fonts.googleapis.com/**',route=>route.abort());
  await page.goto('http://127.0.0.1:5173/#audius',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('#audius-form').waitFor({timeout:60000});
@@ -46,6 +47,12 @@ try {
  await page.setViewportSize({width:390,height:844});
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile layout stays within viewport');
  await page.screenshot({path:'test-results/audius-mobile.png',fullPage:true,timeout:30000});
+ await page.goto('http://127.0.0.1:5173/#search',{waitUntil:'domcontentloaded'});
+ await page.locator('#audius-form').waitFor();
+ assert.equal(await page.locator('#catalog-search').count(),0,'metadata-only search is removed');
+ await page.goto('http://127.0.0.1:5173/#discover',{waitUntil:'domcontentloaded'});
+ await page.getByRole('heading',{name:'Full songs. Fresh discoveries.'}).waitFor();
+ assert.deepEqual(removedRequests,[],'removed integration makes no network requests');
  assert.deepEqual(errors,[]);
  console.log(JSON.stringify({result:'passed',title,duration,checks:['live search','full audio playback','favorite persistence','playlist persistence','play after reload','mobile layout','no JavaScript errors']}));
 } finally {await browser.close();}
