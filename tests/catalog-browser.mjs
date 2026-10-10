@@ -1,0 +1,37 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE||undefined});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ page.on('response',async r=>{if(r.url().includes('api.jamendo.com')){try{const d=await r.json();console.log('Jamendo response',r.status(),d.headers?.status,d.headers?.error_message,d.results?.length);}catch{}}});
+ await page.route('**/fonts.googleapis.com/**',r=>r.abort());
+ await page.goto(`${process.env.SONIX_URL||'http://127.0.0.1:5173/'}#music`,{waitUntil:'domcontentloaded',timeout:120000});
+ await page.locator('[data-provider=jamendo]').click();console.log('Jamendo selected');
+ await page.locator('#music-section .track-number').first().waitFor({timeout:60000}).catch(async e=>{console.log(await page.locator('#music-section').innerText());throw e;});
+ assert.equal(await page.locator('#music-section .track-row').count(),48);console.log('48 tracks loaded');
+ const first=await page.locator('#music-section .track-number').first().getAttribute('data-track');
+ await page.getByRole('button',{name:'Next page',exact:true}).click();
+ await page.locator('.catalog-pagination').filter({hasText:'Page 2'}).waitFor({timeout:60000});
+ assert.notEqual(await page.locator('#music-section .track-number').first().getAttribute('data-track'),first);
+ assert.equal(await page.locator('#music-section .track-row').count(),48);console.log('48 tracks loaded');
+ await page.locator('#music-section .track-number').first().click();
+ await page.waitForFunction(()=>document.querySelector('#elapsed').textContent!=='0:00',null,{timeout:90000}).catch(async error=>{console.log('Playback status:',await page.locator('#toast').textContent(),await page.locator('#player-artist').textContent());throw error;});
+ console.log('Page 2 playback:',await page.locator('#player-title').textContent(),await page.locator('#duration').textContent());
+ await page.locator('#play-toggle').click();
+ await page.getByRole('button',{name:'Previous page',exact:true}).click();
+ await page.locator('.catalog-pagination').filter({hasText:'Page 1 '}).waitFor({timeout:60000});
+ assert.equal(await page.locator('#music-section .track-number').first().getAttribute('data-track'),first);
+ await page.locator('#music-sort').selectOption('newest');
+ await page.locator('#music-section .track-number').first().waitFor({timeout:60000}).catch(async e=>{console.log(await page.locator('#music-section').innerText());throw e;});
+ await page.getByRole('textbox',{name:'Search full songs'}).fill('chill');
+ await page.locator('#music-form button[type=submit]').click();
+ await page.locator('#music-section .track-number').first().waitFor({timeout:60000}).catch(async e=>{console.log(await page.locator('#music-section').innerText());throw e;});
+ assert.match(await page.locator('.catalog-pagination').innerText(),/Page 1 /);
+ await page.getByRole('button',{name:'Next page',exact:true}).click();
+ await page.locator('.catalog-pagination').filter({hasText:'Page 2'}).waitFor({timeout:60000});
+ await page.setViewportSize({width:390,height:844});
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ assert.deepEqual(errors,[]);
+ console.log('PASS: full catalog pages, search pagination, sorting, bounded rows, mobile, full playback');
+} finally {await browser.close();}

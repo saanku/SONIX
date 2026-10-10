@@ -18,10 +18,15 @@ let view='home', activeFilter='All', selectedMix=null, query='', user=null, queu
 let cloudTimer, searchTimer, toastTimer, objectUrl, cloudChain=Promise.resolve(), cloudLoading=false, cloudSynced=false;
 let jamendoClientId=import.meta.env.VITE_JAMENDO_CLIENT_ID||'';try{jamendoClientId=localStorage.getItem('sonix-jamendo-client-id')||jamendoClientId;}catch{}
 const music=createMusicClient({jamendoClientId}), musicRegistry=new Map();
-let musicState={provider:'archive',query:'',tracks:[],status:'idle',error:'',collection:null}, musicVersion=0;
+let musicState={provider:jamendoClientId?'jamendo':'archive',query:'',tracks:[],status:'idle',error:'',collection:null}, musicVersion=0;
 const audio=new Audio();audio.preload='metadata';audio.volume=.7;
 const allTracks=()=>[...originals,...library.tracks.filter(t=>!t.provider||supportedProvider(t.provider))];
 const trackById=id=>allTracks().find(t=>t.id===id)||musicRegistry.get(id);
+function registerMusicTracks(tracks){
+ for(const t of tracks)musicRegistry.set(t.id,t);
+ const keep=new Set([...queue,current?.id,...tracks.map(t=>t.id)]);
+ for(const id of musicRegistry.keys()){if(musicRegistry.size<=300)break;if(!keep.has(id))musicRegistry.delete(id);}
+}
 function rememberMusic(id){const t=trackById(id);if(supportedProvider(t?.provider)&&!library.tracks.some(saved=>saved.id===id))library.tracks.push({...t});}
 const time=s=>Number.isFinite(s)?`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`:'0:00';
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4000);}
@@ -89,15 +94,15 @@ function renderMusic(){
  if(focused)section.querySelector('input')?.focus();refreshIcons();
  if(musicState.status==='idle'&&music.configured(musicState.provider))loadMusic('');
 }
-async function loadMusic(q=''){
- const token=++musicVersion,provider=musicState.provider;musicState={provider,query:q,tracks:[],status:'loading',error:'',collection:null};if(['home','search','music'].includes(view))renderMusic();
- try{const result=await music.browse(provider,q);if(token!==musicVersion)return;for(const t of result.tracks)musicRegistry.set(t.id,t);musicState={...musicState,tracks:result.tracks,status:'ready'};}
+async function loadMusic(q='',page=0,sort=musicState.sort||'popular'){
+ const token=++musicVersion,provider=musicState.provider;musicState={provider,query:q,page,sort,total:page?musicState.total:null,tracks:[],status:'loading',error:'',collection:null};if(['home','search','music'].includes(view))renderMusic();
+ try{const result=await music.browse(provider,q,{page,sort});if(token!==musicVersion)return;if(provider==='jamendo'&&!result.tracks.length&&Number.isFinite(musicState.total)&&page*48<musicState.total)throw Error('Jamendo returned an empty page. Please try again.');registerMusicTracks(result.tracks);musicState={...musicState,...result,total:result.total??musicState.total,status:'ready'};}
  catch(error){if(token!==musicVersion)return;musicState.status='error';musicState.error=error.message;}
  if(['home','search','music'].includes(view))renderMusic();
 }
 async function openMusicCollection(item){
  const token=++musicVersion;musicState={...musicState,collection:item,tracks:[],status:'loading',error:''};navigate('music');
- try{const result=await music.expand(item);if(token!==musicVersion)return;for(const t of result.tracks)musicRegistry.set(t.id,t);musicState={...musicState,tracks:result.tracks,status:'ready'};}
+ try{const result=await music.expand(item);if(token!==musicVersion)return;registerMusicTracks(result.tracks);musicState={...musicState,tracks:result.tracks,status:'ready'};}
  catch(error){if(token!==musicVersion)return;musicState.status='error';musicState.error=error.message;}
  if(['home','search','music'].includes(view))renderMusic();
 }
@@ -152,7 +157,8 @@ document.addEventListener('click',async e=>{
  if(a==='toggle')toggle();if(a==='next')step(1);if(a==='previous'){if(audio.currentTime>3)audio.currentTime=0;else step(-1);}
  if(a==='shuffle'){shuffle=!shuffle;updatePlayer();}if(a==='repeat'){repeat=!repeat;updatePlayer();}
  if(a==='like-current'&&current){rememberMusic(current.id);toggleFavorite(library,current.id);persist();render();}
- if(a==='browse-music')navigate('music');if(a==='music-trending'){const input=$('#music-form input');if(input)input.value='';loadMusic('');}if(a==='music-retry'){if(musicState.collection)openMusicCollection(musicState.collection);else loadMusic(musicState.query);}if(a==='music-back')loadMusic(musicState.query);
+ if(a==='browse-music')navigate('music');if(a==='music-trending'){const input=$('#music-form input');if(input)input.value='';loadMusic('');}if(a==='music-retry'){if(musicState.collection)openMusicCollection(musicState.collection);else loadMusic(musicState.query,musicState.page||0);}if(a==='music-back')loadMusic(musicState.query);
+ if(a==='music-next'||a==='music-previous'){if(musicState.status==='loading')return;await loadMusic(musicState.query,Math.max(0,(musicState.page||0)+(a==='music-next'?1:-1)));$('#music-section')?.scrollIntoView({block:'start'});}
  if(a==='connect-jamendo')openDialog(`<span class="eyebrow">JAMENDO MUSIC</span><h2>Connect your music catalog.</h2><p>Enter the public client ID for your own Jamendo developer app. This stays on this device.</p><form id="jamendo-form"><label>Jamendo client ID<input name="clientId" value="${esc(jamendoClientId)}" required maxlength="100" autocomplete="off"/></label><button class="primary" type="submit">Connect Jamendo</button></form><p><a href="https://devportal.jamendo.com/" target="_blank" rel="noopener noreferrer">Create your app on Jamendo</a></p>`);
  if(a==='play-featured')playTrack('night-drive',mixes[0].tracks);
  if(a==='play-view'){const ids=JSON.parse($('#main').dataset.tracks||'[]');if(ids.length)playTrack(ids[0],ids);}
@@ -174,6 +180,7 @@ document.addEventListener('click',async e=>{
  if(a==='sync'){try{await syncAccount();toast('Library synced');}catch(error){toast(cloudMessage(error));}}
  if(a==='logout'){clearTimeout(cloudTimer);await cloudChain;let backedUp=false;try{await writeCloud(user.id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}user=null;cloudSynced=false;library=initialLibrary();localStorage.removeItem('sonix-library');localStorage.removeItem('sonix-library-owner');updateAccount();renderSidebar();render();$('#dialog').close();toast(backedUp?'Signed out. Unsynced changes are kept for your next sign-in.':'Signed out');}
 });
+document.addEventListener('change',e=>{if(e.target.id==='music-sort')loadMusic(musicState.query,0,e.target.value);});
 document.addEventListener('submit',async e=>{
  if(e.target.id==='jamendo-form'){e.preventDefault();const value=String(new FormData(e.target).get('clientId')).trim();if(!/^[A-Za-z0-9_-]{4,100}$/.test(value)){toast('Enter a valid Jamendo client ID, not a URL or client secret.');return;}jamendoClientId=value;localStorage.setItem('sonix-jamendo-client-id',value);music.setJamendoClientId(value);$('#dialog').close();loadMusic('');return;}
  if(e.target.id==='music-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2)loadMusic(q);return;}

@@ -9,6 +9,7 @@ try {
   page.on('request',r=>{if(/audius|musicbrainz/i.test(r.url()))removed.push(r.url());if(r.url().includes('api.jamendo.com'))jamendo.push(r.url());});
   await page.route('**/fonts.googleapis.com/**',r=>r.abort());
   await page.goto(`${base}#music`,{waitUntil:'domcontentloaded',timeout:120000});
+  await page.locator('[data-provider=archive]').click();
   await page.locator('.music-cover').first().waitFor({timeout:60000});
   await page.getByRole('textbox',{name:'Search full songs'}).fill('ProleteR');
   await page.locator('#music-form button[type=submit]').click();
@@ -28,12 +29,12 @@ try {
   await page.getByRole('button',{name:`Play ${title}`,exact:true}).waitFor();
   await page.locator('[data-view=music]').first().click();
   await page.locator('[data-provider=jamendo]').click();
-  await page.getByRole('button',{name:'Add client ID'}).waitFor();
-  assert.equal(jamendo.length,0);
+  const setup=await page.getByRole('button',{name:'Add client ID',exact:true}).count();
+  if(setup)assert.equal(jamendo.length,0);
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile fits viewport');
   await page.route('https://api.jamendo.com/**',r=>r.fulfill({json:{headers:{status:'success'},results:[{id:'123',name:'Test Full Song',artist_name:'Test Artist',duration:240,audio:'https://example.com/full-song.mp3',license_ccurl:'https://creativecommons.org/licenses/by/4.0/'}]}}));
-  await page.getByRole('button',{name:'Add client ID'}).click();
+  await page.getByRole('button',{name:setup?'Add client ID':'Change client ID',exact:true}).click();
   await page.locator('[name=clientId]').fill('test-client');
   await page.getByRole('button',{name:'Connect Jamendo',exact:true}).click();
   await page.getByRole('button',{name:'Play Test Full Song',exact:true}).waitFor();
