@@ -4,10 +4,11 @@ const browser=await chromium.launch({headless:true,executablePath:process.env.BR
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
+ const removed=[];page.on('request',r=>{if(/archive\.org|audius|musicbrainz/i.test(r.url()))removed.push(r.url());});
  page.on('response',async r=>{if(r.url().includes('api.jamendo.com')){try{const d=await r.json();console.log('Jamendo response',r.status(),d.headers?.status,d.headers?.error_message,d.results?.length);}catch{}}});
  await page.route('**/fonts.googleapis.com/**',r=>r.abort());
  await page.goto(`${process.env.SONIX_URL||'http://127.0.0.1:5173/'}#music`,{waitUntil:'domcontentloaded',timeout:120000});
- await page.locator('[data-provider=jamendo]').click();console.log('Jamendo selected');
+ assert.equal(await page.getByText('Internet Archive',{exact:true}).count(),0);
  await page.locator('#music-section .track-number').first().waitFor({timeout:60000}).catch(async e=>{console.log(await page.locator('#music-section').innerText());throw e;});
  assert.equal(await page.locator('#music-section .track-row').count(),48);console.log('48 tracks loaded');
  const first=await page.locator('#music-section .track-number').first().getAttribute('data-track');
@@ -32,6 +33,6 @@ try {
  await page.locator('.catalog-pagination').filter({hasText:'Page 2'}).waitFor({timeout:60000});
  await page.setViewportSize({width:390,height:844});
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
- assert.deepEqual(errors,[]);
+ assert.deepEqual(errors,[]);assert.deepEqual(removed,[]);
  console.log('PASS: full catalog pages, search pagination, sorting, bounded rows, mobile, full playback');
 } finally {await browser.close();}

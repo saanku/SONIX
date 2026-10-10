@@ -18,7 +18,7 @@ let view='home', activeFilter='All', selectedMix=null, query='', user=null, queu
 let cloudTimer, searchTimer, toastTimer, objectUrl, cloudChain=Promise.resolve(), cloudLoading=false, cloudSynced=false;
 let jamendoClientId=import.meta.env.VITE_JAMENDO_CLIENT_ID||'';try{jamendoClientId=localStorage.getItem('sonix-jamendo-client-id')||jamendoClientId;}catch{}
 const music=createMusicClient({jamendoClientId}), musicRegistry=new Map();
-let musicState={provider:jamendoClientId?'jamendo':'archive',query:'',tracks:[],status:'idle',error:'',collection:null}, musicVersion=0;
+let musicState={provider:'jamendo',query:'',tracks:[],status:'idle',error:''}, musicVersion=0;
 const audio=new Audio();audio.preload='metadata';audio.volume=.7;
 const allTracks=()=>[...originals,...library.tracks.filter(t=>!t.provider||supportedProvider(t.provider))];
 const trackById=id=>allTracks().find(t=>t.id===id)||musicRegistry.get(id);
@@ -81,7 +81,7 @@ function render(){
  main.innerHTML=`<section class="collection-hero"><img src="${artwork(art)}" alt=""/><div><span class="eyebrow">${label}</span><h1>${esc(title)}</h1><p>${description}</p><span class="collection-count">SONIX <span>•</span> ${list.length} songs</span></div></section><div class="collection-actions"><button class="primary" data-action="play-view" ${list.length?'':'disabled'}>${icon('play')}Play${list.length?' collection':''}</button><button class="secondary" data-action="import">${icon('upload')}Import music</button>${view==='playlist'?`<button class="icon-button" data-action="edit-playlist" aria-label="Edit playlist">${icon('more-horizontal')}</button>`:''}<span>YOUR MUSIC, YOUR WAY</span></div>${trackRows(list)}${view==='library'?`<section>${sectionHead('MAKE IT YOURS','Your playlists','create-playlist','Create playlist')}<div class="playlist-grid">${library.playlists.map(p=>`<button data-playlist="${esc(p.id)}" class="playlist-tile">${icon('list-music')}<h3>${esc(p.name)}</h3><p>${p.tracks.length} songs</p></button>`).join('')}<button class="playlist-tile new" data-action="create-playlist">${icon('plus')}<h3>A new kind of mood</h3><p>Create a playlist</p></button></div></section>`:''}`;
  main.dataset.tracks=JSON.stringify(list.map(t=>t.id));
  }else if(view==='music'){
- main.innerHTML=`<div class="page-heading"><span class="eyebrow">JAMENDO + INTERNET ARCHIVE</span><h1>Full songs. Fresh discoveries<span class="green">.</span></h1><p>Explore music collections, stream full tracks, and save your favorites.</p></div>`;
+ main.innerHTML=`<div class="page-heading"><span class="eyebrow">JAMENDO MUSIC</span><h1>Full songs. Fresh discoveries<span class="green">.</span></h1><p>Explore the Jamendo catalog, stream full tracks, and save your favorites.</p></div>`;
  }
  if(['home','search','music'].includes(view))renderMusic();
  refreshIcons();updatePlayer();
@@ -95,14 +95,8 @@ function renderMusic(){
  if(musicState.status==='idle'&&music.configured(musicState.provider))loadMusic('');
 }
 async function loadMusic(q='',page=0,sort=musicState.sort||'popular'){
- const token=++musicVersion,provider=musicState.provider;musicState={provider,query:q,page,sort,total:page?musicState.total:null,tracks:[],status:'loading',error:'',collection:null};if(['home','search','music'].includes(view))renderMusic();
+ const token=++musicVersion,provider=musicState.provider;musicState={provider,query:q,page,sort,total:page?musicState.total:null,tracks:[],status:'loading',error:''};if(['home','search','music'].includes(view))renderMusic();
  try{const result=await music.browse(provider,q,{page,sort});if(token!==musicVersion)return;if(provider==='jamendo'&&!result.tracks.length&&Number.isFinite(musicState.total)&&page*48<musicState.total)throw Error('Jamendo returned an empty page. Please try again.');registerMusicTracks(result.tracks);musicState={...musicState,...result,total:result.total??musicState.total,status:'ready'};}
- catch(error){if(token!==musicVersion)return;musicState.status='error';musicState.error=error.message;}
- if(['home','search','music'].includes(view))renderMusic();
-}
-async function openMusicCollection(item){
- const token=++musicVersion;musicState={...musicState,collection:item,tracks:[],status:'loading',error:''};navigate('music');
- try{const result=await music.expand(item);if(token!==musicVersion)return;registerMusicTracks(result.tracks);musicState={...musicState,tracks:result.tracks,status:'ready'};}
  catch(error){if(token!==musicVersion)return;musicState.status='error';musicState.error=error.message;}
  if(['home','search','music'].includes(view))renderMusic();
 }
@@ -144,10 +138,9 @@ function accountDialog(){if(!configured){openDialog(`<span class="eyebrow">YOUR 
 }
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,[data-view]');if(!b)return;
- if(b.dataset.provider){++musicVersion;musicState={provider:b.dataset.provider,query:'',tracks:[],status:'idle',error:'',collection:null};const old=$('#music-section');if(old)old.remove();renderMusic();return;}
  if(b.dataset.view){navigate(b.dataset.view);if(b.dataset.view==='search')$('#search').focus();return;}
  if(b.dataset.mix){navigate('mix',b.dataset.mix);return;}if(b.dataset.playlist){navigate('playlist',b.dataset.playlist);return;}
- if(b.dataset.musicTrack){const t=trackById(b.dataset.musicTrack);if(t?.kind==='collection')openMusicCollection(t);else playTrack(b.dataset.musicTrack,musicState.tracks.map(t=>t.id));return;}
+ if(b.dataset.musicTrack){playTrack(b.dataset.musicTrack,musicState.tracks.map(t=>t.id));return;}
  if(b.dataset.track){const list=$('#main').dataset.tracks;playTrack(b.dataset.track,b.closest('#music-section')?musicState.tracks.map(t=>t.id):list&&['mix','playlist','liked','library','originals'].includes(view)?JSON.parse(list):undefined);return;}
  if(b.dataset.like){rememberMusic(b.dataset.like);toggleFavorite(library,b.dataset.like);persist();render();return;}
  if(b.dataset.add){rememberMusic(b.dataset.add);persist();playlistDialog(b.dataset.add);return;}
@@ -157,7 +150,7 @@ document.addEventListener('click',async e=>{
  if(a==='toggle')toggle();if(a==='next')step(1);if(a==='previous'){if(audio.currentTime>3)audio.currentTime=0;else step(-1);}
  if(a==='shuffle'){shuffle=!shuffle;updatePlayer();}if(a==='repeat'){repeat=!repeat;updatePlayer();}
  if(a==='like-current'&&current){rememberMusic(current.id);toggleFavorite(library,current.id);persist();render();}
- if(a==='browse-music')navigate('music');if(a==='music-trending'){const input=$('#music-form input');if(input)input.value='';loadMusic('');}if(a==='music-retry'){if(musicState.collection)openMusicCollection(musicState.collection);else loadMusic(musicState.query,musicState.page||0);}if(a==='music-back')loadMusic(musicState.query);
+ if(a==='browse-music')navigate('music');if(a==='music-trending'){const input=$('#music-form input');if(input)input.value='';loadMusic('');}if(a==='music-retry')loadMusic(musicState.query,musicState.page||0);
  if(a==='music-next'||a==='music-previous'){if(musicState.status==='loading')return;await loadMusic(musicState.query,Math.max(0,(musicState.page||0)+(a==='music-next'?1:-1)));$('#music-section')?.scrollIntoView({block:'start'});}
  if(a==='connect-jamendo')openDialog(`<span class="eyebrow">JAMENDO MUSIC</span><h2>Connect your music catalog.</h2><p>Enter the public client ID for your own Jamendo developer app. This stays on this device.</p><form id="jamendo-form"><label>Jamendo client ID<input name="clientId" value="${esc(jamendoClientId)}" required maxlength="100" autocomplete="off"/></label><button class="primary" type="submit">Connect Jamendo</button></form><p><a href="https://devportal.jamendo.com/" target="_blank" rel="noopener noreferrer">Create your app on Jamendo</a></p>`);
  if(a==='play-featured')playTrack('night-drive',mixes[0].tracks);
