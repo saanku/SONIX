@@ -1,11 +1,12 @@
 import './style.css';
-import './audius.css';
+import './music.css';
 import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2 } from 'lucide';
 import { tracks as originals, mixes, artwork } from './catalog';
 import { initialLibrary, safeLibrary, toggleFavorite, nextIndex, mergeLibraries } from './library';
 import { saveAudio, loadAudio } from './storage';
 import { configured, getClient, readCloud, writeCloud, cloudMessage } from './cloud';
-import { createAudiusClient } from './audius';
+import { createMusicClient, supportedProvider, providerName, safeWebUrl } from './music';
+import { musicMarkup } from './music-view';
 
 const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2};
 const $=s=>document.querySelector(s);
@@ -15,12 +16,13 @@ const refreshIcons=()=>createIcons({icons,attrs:{'stroke-width':1.7}});
 let library;try{library=safeLibrary(JSON.parse(localStorage.getItem('sonix-library')));}catch{library=initialLibrary();}
 let view='home', activeFilter='All', selectedMix=null, query='', user=null, queue=originals.map(t=>t.id), current=null, shuffle=false, repeat=false, installPrompt=null, playbackToken=0;
 let cloudTimer, searchTimer, toastTimer, objectUrl, cloudChain=Promise.resolve(), cloudLoading=false, cloudSynced=false;
-const audius=createAudiusClient({apiKey:import.meta.env.VITE_AUDIUS_API_KEY||''}), audiusRegistry=new Map();
-let audiusState={query:'',tracks:[],status:'idle',error:''}, audiusVersion=0;
+let jamendoClientId=import.meta.env.VITE_JAMENDO_CLIENT_ID||'';try{jamendoClientId=localStorage.getItem('sonix-jamendo-client-id')||jamendoClientId;}catch{}
+const music=createMusicClient({jamendoClientId}), musicRegistry=new Map();
+let musicState={provider:'archive',query:'',tracks:[],status:'idle',error:'',collection:null}, musicVersion=0;
 const audio=new Audio();audio.preload='metadata';audio.volume=.7;
-const allTracks=()=>[...originals,...library.tracks];
-const trackById=id=>allTracks().find(t=>t.id===id)||audiusRegistry.get(id);
-function rememberAudius(id){const t=trackById(id);if(t?.provider==='audius'&&!library.tracks.some(saved=>saved.id===id))library.tracks.push({...t});}
+const allTracks=()=>[...originals,...library.tracks.filter(t=>!t.provider||supportedProvider(t.provider))];
+const trackById=id=>allTracks().find(t=>t.id===id)||musicRegistry.get(id);
+function rememberMusic(id){const t=trackById(id);if(supportedProvider(t?.provider)&&!library.tracks.some(saved=>saved.id===id))library.tracks.push({...t});}
 const time=s=>Number.isFinite(s)?`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`:'0:00';
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4000);}
 function persist(){try{localStorage.setItem('sonix-library',JSON.stringify(library));if(user)localStorage.setItem('sonix-library-owner',user.id);}catch{toast('Device storage is full. Your latest changes could not be saved.');}if(user&&!cloudLoading){clearTimeout(cloudTimer);const id=user.id;cloudTimer=setTimeout(()=>{if(user?.id!==id)return;const data=structuredClone(library);cloudChain=cloudChain.then(()=>writeCloud(id,data)).then(()=>{cloudSynced=true;updateAccount();}).catch(error=>{cloudSynced=false;updateAccount();toast(cloudMessage(error));});},600);}renderSidebar();}
@@ -29,7 +31,7 @@ $('#app').innerHTML=`
 <aside class="sidebar">
  <a class="brand" href="#home" aria-label="SONIX home"><img src="${import.meta.env.BASE_URL}icon.svg" alt=""/>SONIX<span>®</span></a>
  <div class="nav-label">YOUR DAILY SOUNDTRACK</div>
- <nav class="main-nav"><button data-view="home">${icon('home')}<span>Home</span></button><button data-view="search">${icon('search')}<span>Search</span></button><button data-view="audius">${icon('radio')}<span>Full songs</span></button><button data-view="library">${icon('library')}<span>Your library</span></button></nav>
+ <nav class="main-nav"><button data-view="home">${icon('home')}<span>Home</span></button><button data-view="search">${icon('search')}<span>Search</span></button><button data-view="music">${icon('radio')}<span>Full songs</span></button><button data-view="library">${icon('library')}<span>Your library</span></button></nav>
  <div class="sidebar-divider"></div>
  <div class="library-label">YOUR COLLECTION<button class="icon-button" data-action="create-playlist" aria-label="Create playlist">${icon('plus')}</button></div>
  <button class="side-liked" data-view="liked"><span class="liked-icon">${icon('heart')}</span><span>Liked songs<small id="like-count"></small></span></button>
@@ -57,10 +59,10 @@ function render(){
  if(view==='home'){
  const visible=activeFilter==='All'?mixes:mixes.filter(m=>m.tracks.some(id=>trackById(id)?.mood===activeFilter));
  main.innerHTML=`<div class="greeting"><div><span class="eyebrow">YOUR WORLD, ON REPEAT</span><h1>Find your next feeling<span class="green">.</span></h1><p>A soundtrack for wherever the day takes you.</p></div><span class="date-pill">${icon('radio')}Tuned in to you</span></div>
- <div class="filter-row">${['All','Chill','Electronic','Focus','Ambient'].map(f=>`<button class="chip ${activeFilter===f?'chosen':''}" data-filter="${f}">${f}</button>`).join('')}<button class="language-link" data-view="audius">${icon('globe-2')}Full songs${icon('arrow-up-right')}</button></div>
+ <div class="filter-row">${['All','Chill','Electronic','Focus','Ambient'].map(f=>`<button class="chip ${activeFilter===f?'chosen':''}" data-filter="${f}">${f}</button>`).join('')}<button class="language-link" data-view="music">${icon('globe-2')}Full songs${icon('arrow-up-right')}</button></div>
  <section class="hero"><img class="hero-photo" src="${artwork('hero')}" alt="Atmospheric concert lights over a crowd" fetchpriority="high"/><div class="hero-shade"></div><div class="hero-copy"><span class="hero-label"><span></span>THE SONIX EDIT</span><h2>Lose yourself.<br/>Find your sound.</h2><p>Late nights. Open roads. Just you and the music.<br/>Meet the mix that gets you.</p><div class="hero-actions"><button class="primary" data-action="play-featured">${icon('play')}Play the mix</button><button class="secondary" data-mix="night">Explore mix${icon('arrow-up-right')}</button></div></div><div class="hero-caption"><span>01 / 05</span><div><i></i><i></i><i></i><i></i><i></i></div><span>CURATED FOR YOUR EVERYDAY</span></div><span class="hero-vertical">PRESS PLAY. STAY A WHILE.</span></section>
  <section>${sectionHead('GOOD MUSIC. NO GUESSWORK.','Made for your mood','all-mixes','Explore all')}<div class="mix-grid">${visible.map(mixCard).join('')}</div></section>
- <section class="lower-grid"><div>${sectionHead('A LITTLE DISCOVERY','In heavy rotation','originals','View all')}${trackRows(originals.slice(0,4))}</div><div class="discovery-card"><span class="eyebrow">NO BORDERS. JUST MUSIC.</span><div class="globe-art">${icon('globe-2')}<span>ALL<br/>TOGETHER.</span></div><h3>A world worth listening to.</h3><p>Full tracks from independent artists.<br/>Your next discovery is out there.</p><button class="text-button" data-view="audius">Explore full songs${icon('arrow-up-right')}</button></div></section>
+ <section class="lower-grid"><div>${sectionHead('A LITTLE DISCOVERY','In heavy rotation','originals','View all')}${trackRows(originals.slice(0,4))}</div><div class="discovery-card"><span class="eyebrow">NO BORDERS. JUST MUSIC.</span><div class="globe-art">${icon('globe-2')}<span>ALL<br/>TOGETHER.</span></div><h3>A world worth listening to.</h3><p>Full tracks from independent artists.<br/>Your next discovery is out there.</p><button class="text-button" data-view="music">Explore full songs${icon('arrow-up-right')}</button></div></section>
  ${library.history.length?`<section>${sectionHead('WELCOME BACK','Recently played')}${trackRows(library.history.map(trackById).filter(Boolean).slice(0,4))}</section>`:''}`;
  }else if(view==='search'){
  const results=allTracks().filter(t=>`${t.title} ${t.artist} ${t.album} ${t.mood||''}`.toLowerCase().includes(query.toLowerCase()));
@@ -73,31 +75,37 @@ function render(){
  if(view==='playlist'){const p=library.playlists.find(p=>p.id===selectedMix);title=p?.name||'Playlist';label='YOUR PERSONAL PLAYLIST';description='Every track, a little more you.';list=(p?.tracks||[]).map(trackById).filter(Boolean);}
  main.innerHTML=`<section class="collection-hero"><img src="${artwork(art)}" alt=""/><div><span class="eyebrow">${label}</span><h1>${esc(title)}</h1><p>${description}</p><span class="collection-count">SONIX <span>•</span> ${list.length} songs</span></div></section><div class="collection-actions"><button class="primary" data-action="play-view" ${list.length?'':'disabled'}>${icon('play')}Play${list.length?' collection':''}</button><button class="secondary" data-action="import">${icon('upload')}Import music</button>${view==='playlist'?`<button class="icon-button" data-action="edit-playlist" aria-label="Edit playlist">${icon('more-horizontal')}</button>`:''}<span>YOUR MUSIC, YOUR WAY</span></div>${trackRows(list)}${view==='library'?`<section>${sectionHead('MAKE IT YOURS','Your playlists','create-playlist','Create playlist')}<div class="playlist-grid">${library.playlists.map(p=>`<button data-playlist="${esc(p.id)}" class="playlist-tile">${icon('list-music')}<h3>${esc(p.name)}</h3><p>${p.tracks.length} songs</p></button>`).join('')}<button class="playlist-tile new" data-action="create-playlist">${icon('plus')}<h3>A new kind of mood</h3><p>Create a playlist</p></button></div></section>`:''}`;
  main.dataset.tracks=JSON.stringify(list.map(t=>t.id));
- }else if(view==='audius'){
- main.innerHTML=`<div class="page-heading"><span class="eyebrow">POWERED BY AUDIUS</span><h1>Full songs. Fresh discoveries<span class="green">.</span></h1><p>Stream public tracks from Audius, find independent artists, and save your favorites.</p></div>`;
+ }else if(view==='music'){
+ main.innerHTML=`<div class="page-heading"><span class="eyebrow">JAMENDO + INTERNET ARCHIVE</span><h1>Full songs. Fresh discoveries<span class="green">.</span></h1><p>Explore music collections, stream full tracks, and save your favorites.</p></div>`;
  }
- if(['home','search','audius'].includes(view))renderAudius();
+ if(['home','search','music'].includes(view))renderMusic();
  refreshIcons();updatePlayer();
 }
-function renderAudius(){
- let section=$('#audius-section');if(!section){section=document.createElement('section');section.id='audius-section';section.className='audius-section';const anchor=view==='home'?$('#main .hero'):$('#main .page-heading');anchor?.insertAdjacentElement('afterend',section);}
- const s=audiusState, priorInput=section.querySelector('input'), draft=priorInput?.value, hadFocus=document.activeElement===priorInput;
- section.innerHTML=`${sectionHead('FULL TRACKS · POWERED BY AUDIUS',s.query?`Sounds for “${esc(s.query)}”`:'Discover your next favorite',view==='home'?'browse-audius':'','Explore full songs')}<form id="audius-form"><label class="catalog-input">${icon('search')}<input name="query" aria-label="Search Audius full songs" value="${esc(view==='search'&&query?query:s.query)}" placeholder="Search songs or artists on Audius" minlength="2" maxlength="120" required/></label><button class="primary" type="submit" ${s.status==='loading'?'disabled':''}>${icon('search')}Search</button><button class="secondary" type="button" data-action="audius-trending" ${s.status==='loading'?'disabled':''}>Trending</button></form><p class="catalog-note">Full playback for publicly available Audius tracks. Your favorites and playlists stay in SONIX.</p><div class="catalog-status" role="status" aria-live="polite">${s.status==='loading'?'Finding your next sound…':s.status==='error'?esc(s.error):s.status==='ready'&&!s.tracks.length?'No public tracks found. Try another artist or song.':''}</div>${s.status==='error'?'<button class="secondary" data-action="audius-retry">Try again</button>':''}${s.status==='ready'&&s.tracks.length?(view==='home'?`<div class="audius-grid">${s.tracks.slice(0,5).map(t=>`<article class="audius-card"><button class="audius-cover" data-audius-track="${esc(t.id)}" aria-label="Play ${esc(t.title)}"><img loading="lazy" src="${esc(t.artwork||artwork('flower'))}" alt="${esc(t.title)} artwork"/><span class="audius-badge">FULL TRACK</span><span class="card-play">${icon('play')}</span></button><h3>${esc(t.title)}</h3><p>${esc(t.artist)}</p><div class="audius-card-bottom"><span>${time(t.duration)}</span><a href="${esc(t.permalink)}" target="_blank" rel="noopener noreferrer">Audius ${icon('arrow-up-right')}</a><button class="icon-button ${library.favorites.includes(t.id)?'active':''}" data-like="${esc(t.id)}" aria-label="Like ${esc(t.title)}">${icon('heart')}</button></div></article>`).join('')}</div>`:`${trackRows(s.tracks)}<a class="audius-attribution" href="https://audius.co" target="_blank" rel="noopener noreferrer">Music provided by Audius ${icon('arrow-up-right')}</a>`):''}`;
- if(draft!==undefined)section.querySelector('input').value=draft;
- if(hadFocus)section.querySelector('input').focus();
- refreshIcons();if(s.status==='idle')loadAudius('');
+function renderMusic(){
+ let section=$('#music-section');if(!section){section=document.createElement('section');section.id='music-section';section.className='music-section';const anchor=view==='home'?$('#main .hero'):$('#main .page-heading');anchor?.insertAdjacentElement('afterend',section);}
+ const old=section.querySelector('input'),draft=old?.value,focused=document.activeElement===old;
+ section.innerHTML=musicMarkup({state:musicState,view,query,configured:music.configured('jamendo'),sectionHead,icon,esc,time,artwork,trackRows,favorites:library.favorites});
+ if(draft!==undefined&&section.querySelector('input'))section.querySelector('input').value=draft;
+ if(focused)section.querySelector('input')?.focus();refreshIcons();
+ if(musicState.status==='idle'&&music.configured(musicState.provider))loadMusic('');
 }
-async function loadAudius(q=''){
- const token=++audiusVersion;audiusState={query:q,tracks:[],status:'loading',error:''};if(['home','search','audius'].includes(view))renderAudius();
- try{const result=q?await audius.search(q):await audius.trending();if(token!==audiusVersion)return;for(const t of result.tracks)audiusRegistry.set(t.id,t);audiusState={query:q,tracks:result.tracks,status:'ready',error:''};}
- catch(error){if(token!==audiusVersion)return;audiusState={query:q,tracks:[],status:'error',error:error.message||'Audius is unavailable. Please try again.'};}
- if(['home','search','audius'].includes(view))renderAudius();
+async function loadMusic(q=''){
+ const token=++musicVersion,provider=musicState.provider;musicState={provider,query:q,tracks:[],status:'loading',error:'',collection:null};if(['home','search','music'].includes(view))renderMusic();
+ try{const result=await music.browse(provider,q);if(token!==musicVersion)return;for(const t of result.tracks)musicRegistry.set(t.id,t);musicState={...musicState,tracks:result.tracks,status:'ready'};}
+ catch(error){if(token!==musicVersion)return;musicState.status='error';musicState.error=error.message;}
+ if(['home','search','music'].includes(view))renderMusic();
+}
+async function openMusicCollection(item){
+ const token=++musicVersion;musicState={...musicState,collection:item,tracks:[],status:'loading',error:''};navigate('music');
+ try{const result=await music.expand(item);if(token!==musicVersion)return;for(const t of result.tracks)musicRegistry.set(t.id,t);musicState={...musicState,tracks:result.tracks,status:'ready'};}
+ catch(error){if(token!==musicVersion)return;musicState.status='error';musicState.error=error.message;}
+ if(['home','search','music'].includes(view))renderMusic();
 }
 function navigate(next,id){view=next;selectedMix=id||null;const hash=`#${next}${id?'/'+encodeURIComponent(id):''}`;if(location.hash!==hash)location.hash=hash;render();window.scrollTo({top:0,behavior:'instant'});}
-window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1).split('/');view=next==='discover'?'audius':['home','search','library','liked','originals','mix','playlist','audius'].includes(next)?next:'home';try{selectedMix=id?decodeURIComponent(id):null;}catch{selectedMix=null;}render();});
+window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1).split('/');view=['discover','audius'].includes(next)?'music':['home','search','library','liked','originals','mix','playlist','music'].includes(next)?next:'home';try{selectedMix=id?decodeURIComponent(id):null;}catch{selectedMix=null;}render();});
 function updatePlayer(){
  $('#play-toggle').innerHTML=icon(audio.paused?'play':'pause');$('#play-toggle').setAttribute('aria-label',audio.paused?'Play':'Pause');
- if(current){$('#player-title').textContent=current.title;$('#player-artist').innerHTML=esc(current.artist)+(current.provider==='audius'?` · <a href="${esc(current.permalink?.startsWith('https://audius.co/')?current.permalink:'https://audius.co')}" target="_blank" rel="noopener noreferrer">Audius ↗</a>`:'');$('#player-art').src=current.artwork||artwork('flower');$('#player-like').classList.toggle('active',library.favorites.includes(current.id));}
+ if(current){$('#player-title').textContent=current.title;$('#player-artist').innerHTML=esc(current.artist)+(supportedProvider(current.provider)?` · <a href="${esc(safeWebUrl(current.permalink))}" target="_blank" rel="noopener noreferrer">${esc(providerName(current.provider))} ↗</a>${safeWebUrl(current.license)?` | <a href="${esc(safeWebUrl(current.license))}" target="_blank" rel="noopener noreferrer">License</a>`:''}`:'');$('#player-art').src=current.artwork||artwork('flower');$('#player-like').classList.toggle('active',library.favorites.includes(current.id));}
  $('#shuffle').classList.toggle('active',shuffle);$('#shuffle').setAttribute('aria-pressed',shuffle);$('#repeat').classList.toggle('active',repeat);$('#repeat').setAttribute('aria-pressed',repeat);refreshIcons();
 }
 async function playTrack(id,newQueue){
@@ -106,12 +114,12 @@ async function playTrack(id,newQueue){
  audio.pause();audio.removeAttribute('src');audio.load();if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
  current=t;updatePlayer();$('#player-artist').textContent='Loading audio…';$('#elapsed').textContent='0:00';$('#duration').textContent=time(t.duration);$('#seek').value=0;$('#seek').style.setProperty('--fill','0%');
  try{
- let url=t.url;if(t.provider==='audius'){const resolved=await audius.resolve(t);if(token!==playbackToken)return;Object.assign(t,resolved.track);url=resolved.url;}if(t.local){const file=await loadAudio(id);if(token!==playbackToken)return;if(!file)throw Error('This audio file is stored on another device. Import it on this device to play.');objectUrl=URL.createObjectURL(file);url=objectUrl;}
+ let url=t.url;if(supportedProvider(t.provider)){const resolved=await music.resolve(t);if(token!==playbackToken)return;Object.assign(t,resolved.track);url=resolved.url;}if(t.local){const file=await loadAudio(id);if(token!==playbackToken)return;if(!file)throw Error('This audio file is stored on another device. Import it on this device to play.');objectUrl=URL.createObjectURL(file);url=objectUrl;}
  if(!url)throw Error('No playable audio is available.');if(token!==playbackToken)return;audio.src=url;await audio.play();if(token!==playbackToken)return;
- rememberAudius(id);library.history=[id,...library.history.filter(x=>x!==id)].slice(0,50);persist();updatePlayer();
+ rememberMusic(id);library.history=[id,...library.history.filter(x=>x!==id)].slice(0,50);persist();updatePlayer();
  document.querySelectorAll('.track-row').forEach(row=>row.classList.toggle('is-current',row.querySelector('[data-track]')?.dataset.track===id));
  if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:t.album,artwork:[{src:new URL(t.artwork||artwork('flower'),location.href).href,sizes:'640x640',type:'image/jpeg'}]});}
- }catch(e){if(token!==playbackToken)return;toast(t.provider==='audius'?e.message||'Audius could not play this track. Please try another.':e.message?.includes('another device')?e.message:'Could not play this file. Try another track or supported audio format.');updatePlayer();}
+ }catch(e){if(token!==playbackToken)return;toast(supportedProvider(t.provider)?e.message||'This service could not play the track. Please try another.':e.message?.includes('another device')?e.message:'Could not play this file. Try another track or supported audio format.');updatePlayer();}
  renderQueue();
 }
 function step(direction){const idx=nextIndex(queue.indexOf(current?.id),queue.length,direction,shuffle&&direction===1);if(idx>=0)playTrack(queue[idx]);}
@@ -131,24 +139,26 @@ function accountDialog(){if(!configured){openDialog(`<span class="eyebrow">YOUR 
 }
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,[data-view]');if(!b)return;
+ if(b.dataset.provider){++musicVersion;musicState={provider:b.dataset.provider,query:'',tracks:[],status:'idle',error:'',collection:null};const old=$('#music-section');if(old)old.remove();renderMusic();return;}
  if(b.dataset.view){navigate(b.dataset.view);if(b.dataset.view==='search')$('#search').focus();return;}
  if(b.dataset.mix){navigate('mix',b.dataset.mix);return;}if(b.dataset.playlist){navigate('playlist',b.dataset.playlist);return;}
- if(b.dataset.audiusTrack){playTrack(b.dataset.audiusTrack,audiusState.tracks.map(t=>t.id));return;}
- if(b.dataset.track){const list=$('#main').dataset.tracks;playTrack(b.dataset.track,b.closest('#audius-section')?audiusState.tracks.map(t=>t.id):list&&['mix','playlist','liked','library','originals'].includes(view)?JSON.parse(list):undefined);return;}
- if(b.dataset.like){rememberAudius(b.dataset.like);toggleFavorite(library,b.dataset.like);persist();render();return;}
- if(b.dataset.add){rememberAudius(b.dataset.add);persist();playlistDialog(b.dataset.add);return;}
+ if(b.dataset.musicTrack){const t=trackById(b.dataset.musicTrack);if(t?.kind==='collection')openMusicCollection(t);else playTrack(b.dataset.musicTrack,musicState.tracks.map(t=>t.id));return;}
+ if(b.dataset.track){const list=$('#main').dataset.tracks;playTrack(b.dataset.track,b.closest('#music-section')?musicState.tracks.map(t=>t.id):list&&['mix','playlist','liked','library','originals'].includes(view)?JSON.parse(list):undefined);return;}
+ if(b.dataset.like){rememberMusic(b.dataset.like);toggleFavorite(library,b.dataset.like);persist();render();return;}
+ if(b.dataset.add){rememberMusic(b.dataset.add);persist();playlistDialog(b.dataset.add);return;}
  if(b.dataset.filter){activeFilter=b.dataset.filter;render();return;}
  if(b.dataset.saveTrack){const p=library.playlists.find(p=>p.id===b.dataset.target);if(p&&!p.tracks.includes(b.dataset.saveTrack))p.tracks.push(b.dataset.saveTrack);persist();$('#dialog').close();toast('Added to your playlist');if(view==='playlist')render();return;}
  const a=b.dataset.action;
  if(a==='toggle')toggle();if(a==='next')step(1);if(a==='previous'){if(audio.currentTime>3)audio.currentTime=0;else step(-1);}
  if(a==='shuffle'){shuffle=!shuffle;updatePlayer();}if(a==='repeat'){repeat=!repeat;updatePlayer();}
- if(a==='like-current'&&current){rememberAudius(current.id);toggleFavorite(library,current.id);persist();render();}
- if(a==='browse-audius')navigate('audius');if(a==='audius-trending'){const input=$('#audius-form input');if(input)input.value='';loadAudius('');}if(a==='audius-retry')loadAudius(audiusState.query);
+ if(a==='like-current'&&current){rememberMusic(current.id);toggleFavorite(library,current.id);persist();render();}
+ if(a==='browse-music')navigate('music');if(a==='music-trending'){const input=$('#music-form input');if(input)input.value='';loadMusic('');}if(a==='music-retry'){if(musicState.collection)openMusicCollection(musicState.collection);else loadMusic(musicState.query);}if(a==='music-back')loadMusic(musicState.query);
+ if(a==='connect-jamendo')openDialog(`<span class="eyebrow">JAMENDO MUSIC</span><h2>Connect your music catalog.</h2><p>Enter the public client ID for your own Jamendo developer app. This stays on this device.</p><form id="jamendo-form"><label>Jamendo client ID<input name="clientId" value="${esc(jamendoClientId)}" required maxlength="100" autocomplete="off"/></label><button class="primary" type="submit">Connect Jamendo</button></form><p><a href="https://devportal.jamendo.com/" target="_blank" rel="noopener noreferrer">Create your app on Jamendo</a></p>`);
  if(a==='play-featured')playTrack('night-drive',mixes[0].tracks);
  if(a==='play-view'){const ids=JSON.parse($('#main').dataset.tracks||'[]');if(ids.length)playTrack(ids[0],ids);}
  if(a==='all-mixes'){activeFilter='All';navigate('home');document.querySelector('.mix-grid')?.scrollIntoView({behavior:'smooth',block:'center'});}
  if(a==='originals')navigate('originals');
- if(a==='now-playing'&&current)navigate(current.provider==='audius'?'audius':current.local?'library':'originals');
+ if(a==='now-playing'&&current)navigate(supportedProvider(current.provider)?'music':current.local?'library':'originals');
  if(a==='back')history.back();if(a==='forward')history.forward();
  if(a==='queue'){$('#queue-panel').hidden=!$('#queue-panel').hidden;renderQueue();}
  if(a==='mute'){audio.muted=!audio.muted;$('#mute').innerHTML=icon(audio.muted?'volume-x':'volume-2');refreshIcons();}
@@ -165,13 +175,14 @@ document.addEventListener('click',async e=>{
  if(a==='logout'){clearTimeout(cloudTimer);await cloudChain;let backedUp=false;try{await writeCloud(user.id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}user=null;cloudSynced=false;library=initialLibrary();localStorage.removeItem('sonix-library');localStorage.removeItem('sonix-library-owner');updateAccount();renderSidebar();render();$('#dialog').close();toast(backedUp?'Signed out. Unsynced changes are kept for your next sign-in.':'Signed out');}
 });
 document.addEventListener('submit',async e=>{
- if(e.target.id==='audius-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2)loadAudius(q);return;}
+ if(e.target.id==='jamendo-form'){e.preventDefault();const value=String(new FormData(e.target).get('clientId')).trim();if(!/^[A-Za-z0-9_-]{4,100}$/.test(value)){toast('Enter a valid Jamendo client ID, not a URL or client secret.');return;}jamendoClientId=value;localStorage.setItem('sonix-jamendo-client-id',value);music.setJamendoClientId(value);$('#dialog').close();loadMusic('');return;}
+ if(e.target.id==='music-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2)loadMusic(q);return;}
  if(e.target.id==='playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;const p={id:crypto.randomUUID(),name,tracks:e.target.dataset.trackId?[e.target.dataset.trackId]:[]};library.playlists.push(p);persist();$('#dialog').close();navigate('playlist',p.id);toast('Your new playlist is ready');}
  if(e.target.id==='edit-playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;library.playlists.find(p=>p.id===selectedMix).name=name;persist();$('#dialog').close();render();}
  if(e.target.id==='auth-form'){e.preventDefault();const form=e.target;const data=new FormData(form);const mode=e.submitter?.value;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{const c=await getClient();const payload={email:data.get('email').trim(),password:data.get('password')};const {data:result,error}=mode==='signup'?await c.auth.signUp({...payload,options:{emailRedirectTo:location.origin+location.pathname}}):await c.auth.signInWithPassword(payload);if(error)throw error;if(result.session){user=result.session.user;updateAccount();$('#dialog').close();try{await syncAccount();toast('Welcome to your space');}catch(error){toast(cloudMessage(error));}}else $('#auth-message').textContent='Check your email to confirm your account, then sign in.';}catch(err){const message=form.querySelector('#auth-message');if(message)message.textContent=err.message;}finally{form.querySelectorAll('button').forEach(b=>b.disabled=false);}}
 });
 $('#search').addEventListener('input',e=>{query=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>navigate('search'),120);});
-document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement&&e.target.closest('#audius-section')&&e.target.src.startsWith('https://'))e.target.src=artwork('flower');},true);
+document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement&&e.target.closest('#music-section')&&e.target.src.startsWith('https://'))e.target.src=artwork('flower');},true);
 $('#file-input').addEventListener('change',async e=>{const files=[...e.target.files];let count=0;for(const file of files){if(!file.type.startsWith('audio/')&&!/\.(mp3|wav|m4a|ogg|flac)$/i.test(file.name))continue;const id=`local-${file.name}-${file.size}-${file.lastModified}`;try{await saveAudio(id,file);if(!library.tracks.some(t=>t.id===id))library.tracks.push({id,title:file.name.replace(/\.[^.]+$/,''),artist:'Your music',album:'Imported collection',artwork:artwork('flower'),local:true,duration:0});count++;}catch{toast('Could not save audio. Device storage may be full.');break;}}persist();navigate('library');toast(`${count} ${count===1?'track':'tracks'} imported to this device`);e.target.value='';});
 document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||$('#dialog').open)return;if(e.key===' '){e.preventDefault();toggle();}if(e.key==='/'){e.preventDefault();$('#search').focus();}if(e.key==='Escape')$('#queue-panel').hidden=true;});
 $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog'))$('#dialog').close();});
@@ -180,6 +191,6 @@ if('mediaSession' in navigator){for(const [action,fn] of Object.entries({play:()
 function updateAccount(){$('#account-label').innerHTML=user?`${esc(user.email?.split('@')[0])}<small>${cloudSynced?'Personal cloud connected':'Signed in · sync pending'}</small>`:'Your personal space<small>Made for your ears only</small>';}
 async function syncAccount(){if(!user)return;cloudLoading=true;cloudSynced=false;clearTimeout(cloudTimer);try{await cloudChain;const owner=localStorage.getItem('sonix-library-owner');if(owner&&owner!==user.id){localStorage.setItem(`sonix-library-backup-${owner}`,JSON.stringify(library));library=initialLibrary();}const backup=localStorage.getItem(`sonix-library-backup-${user.id}`);if(backup){try{library=mergeLibraries(library,JSON.parse(backup));}catch{}}persist();const remote=await readCloud(user.id);library=mergeLibraries(library,remote);persist();await writeCloud(user.id,library);localStorage.removeItem(`sonix-library-backup-${user.id}`);cloudSynced=true;}finally{cloudLoading=false;updateAccount();render();}}
 async function initCloud(){try{const c=await getClient();if(!c)return;const {data,error}=await c.auth.getSession();if(error)throw error;user=data.session?.user||null;updateAccount();if(user)await syncAccount();c.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'){user=session?.user||null;updateAccount();}});}catch(error){cloudSynced=false;updateAccount();toast(cloudMessage(error));}}
-let [initialView,initialId]=location.hash.slice(1).split('/');if(initialView==='discover')initialView='audius';if(['home','search','library','liked','originals','mix','playlist','audius'].includes(initialView)){view=initialView;try{selectedMix=decodeURIComponent(initialId||'');}catch{}}
+let [initialView,initialId]=location.hash.slice(1).split('/');if(['discover','audius'].includes(initialView))initialView='music';if(['home','search','library','liked','originals','mix','playlist','music'].includes(initialView)){view=initialView;try{selectedMix=decodeURIComponent(initialId||'');}catch{}}
 renderSidebar();render();initCloud();
 if('serviceWorker' in navigator&&import.meta.env.PROD)window.addEventListener('load',()=>navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>{}));
