@@ -1,25 +1,43 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createMusicClient,jamendoTrack,durationSeconds} from '../src/music.js';
-test('Missing Jamendo client ID produces a setup error without a network call',async()=>{const c=createMusicClient({fetcher:()=>{throw Error('must not fetch');}});assert.equal(c.configured('jamendo'),false);await assert.rejects(()=>c.browse('jamendo'),/client ID/);});
-test('Jamendo uses full audio field, includes public client ID and preserves attribution',async()=>{const raw={id:'123',name:'Song',artist_name:'Artist',duration:240,audio:'https://prod-1.storage.jamendo.com/audio.mp3',audiodownload:'https://example.com/download',license_ccurl:'http://creativecommons.org/licenses/by/4.0/'};const c=createMusicClient({jamendoClientId:'my-test-id',fetcher:async url=>{assert.equal(new URL(url).searchParams.get('client_id'),'my-test-id');return Response.json({headers:{status:'success'},results:[raw]});}});const [track]=(await c.browse('jamendo','chill')).tracks;assert.equal(track.duration,240);assert.equal(track.license,'https://creativecommons.org/licenses/by/4.0/');assert.equal(track.url,undefined);assert.equal((await c.resolve(track)).url,raw.audio);assert.equal(jamendoTrack({...raw,audio:'javascript:alert(1)'}),null);});
-test('Invalid Jamendo credentials and removed providers are not silently accepted',async()=>{const c=createMusicClient({jamendoClientId:'invalid',fetcher:async()=>Response.json({headers:{status:'failed',error_message:'Invalid client ID'}})});await assert.rejects(()=>c.browse('jamendo'),/Invalid client ID/);await assert.rejects(()=>c.resolve({provider:'old-provider'}),/no longer connected/);});
-test('Duration parsing handles numeric values and hours',()=>{assert.equal(durationSeconds('02:03:04'),7384);assert.equal(durationSeconds('201.2'),201.2);assert.equal(durationSeconds('unknown'),0);});
-test('Jamendo pages include singles and albums, retain search, and stop at final page',async()=>{
- const requests=[];
- const c=createMusicClient({jamendoClientId:'test',fetcher:async url=>{
-  const p=new URL(url).searchParams;requests.push(p);
-  const offset=Number(p.get('offset'));
-  return Response.json({headers:{status:'success',...(offset===0?{results_fullcount:50}:{})},results:Array.from({length:offset===0?48:2},(_,i)=>({id:String(offset+i+1),name:'Song',audio:'https://example.com/full.mp3'}))});
- }});
- const first=await c.browse('jamendo','chill');const next=await c.browse('jamendo','chill',{page:1});
- assert.equal(first.total,50);assert.equal(first.hasNext,true);assert.equal(next.hasNext,false);assert.equal(next.tracks[0].id,'jamendo:49');
- for(const p of requests){assert.equal(p.get('type'),'single albumtrack');assert.equal(p.get('search'),'chill');assert.equal(p.get('order'),'relevance');}
- assert.equal(requests[1].get('offset'),'48');assert.equal(requests[1].get('fullcount'),null);
- await c.browse('jamendo','',{sort:'newest'});assert.equal(requests[2].get('order'),'releasedate_desc');
- await assert.rejects(()=>c.browse('jamendo','',{page:-1}),/Invalid catalog page/);
+import {createMusicClient,youtubeTrack,durationSeconds,supportedProvider,safeWebUrl} from '../src/music.js';
+const video=(id='abcdefghijk')=>({id,snippet:{title:'Song',channelTitle:'Artist',thumbnails:{high:{url:'https://example.com/art.jpg'}}},contentDetails:{duration:'PT3M12S'},status:{embeddable:true}});
+test('YouTube metadata validates IDs, embeds, URLs, and durations',()=>{
+ assert.equal(youtubeTrack(video()).duration,192);
+ assert.equal(youtubeTrack({...video(),status:{embeddable:false}}),null);
+ assert.equal(youtubeTrack(video('bad')),null);
+ assert.equal(safeWebUrl('javascript:alert(1)'),'');
+ assert.equal(durationSeconds('PT1H2M3S'),3723);
+ assert.equal(supportedProvider('jamendo'),false);
 });
-test('Jamendo retries a transient empty result instead of caching an empty catalog page',async()=>{
- let calls=0;const c=createMusicClient({jamendoClientId:'test',fetcher:async()=>Response.json({headers:{status:'success'},results:++calls===1?[]:[{id:'1',name:'Recovered song',audio:'https://example.com/song.mp3'}]})});
- const result=await c.browse('jamendo');assert.equal(calls,2);assert.equal(result.tracks[0].title,'Recovered song');
+test('Missing key makes no network requests',async()=>{
+ const c=createMusicClient({fetcher:()=>assert.fail('Unexpected request')});
+ assert.equal(c.configured('youtube'),false);
+ await assert.rejects(()=>c.browse('youtube'),/API v3 key/);
+});
+test('Search uses page tokens, details and cache; changing key clears state',async()=>{
+ const requests=[];
+ const c=createMusicClient({youtubeApiKey:'test-key',fetcher:async url=>{
+  const u=new URL(url);requests.push(u);
+  return Response.json(u.pathname.endsWith('/search')?{items:[{...video(),id:{videoId:'abcdefghijk'}}],...(u.searchParams.has('pageToken')?{}:{nextPageToken:'page-two'})}:{items:[video()]});
+ }});
+ const first=await c.browse('youtube','music');assert.equal(first.hasNext,true);assert.equal(first.tracks[0].duration,192);
+ const second=await c.browse('youtube','music',{page:1});assert.equal(second.hasNext,false);
+ assert.equal(requests[2].searchParams.get('pageToken'),'page-two');
+ assert.equal(requests[0].searchParams.get('videoEmbeddable'),'true');
+ assert.equal(requests[0].searchParams.get('type'),'video');
+ await c.browse('youtube','music');assert.equal(requests.length,3);
+ c.setYoutubeApiKey('new-key');await c.browse('youtube','music');assert.equal(requests.length,5);
+ await assert.rejects(()=>c.browse('youtube','music',{page:3}),/previous/);
+ await assert.rejects(()=>c.browse('youtube','music',{page:-1}),/Invalid/);
+});
+test('Quota errors and rejected credentials are actionable without disclosing keys',async()=>{
+ for(const [reason,message] of [['quotaExceeded',/quota/],['keyInvalid',/API key/]]){
+  const c=createMusicClient({youtubeApiKey:'private-test-key',fetcher:async()=>Response.json({error:{errors:[{reason}]}},{status:403})});
+  await assert.rejects(()=>c.browse('youtube'),e=>message.test(e.message)&&!e.message.includes('private-test-key'));
+ }
+});
+test('Playback resolves only valid YouTube identifiers',async()=>{
+ const c=createMusicClient();assert.equal((await c.resolve(youtubeTrack(video()))).url,'youtube:abcdefghijk');
+ await assert.rejects(()=>c.resolve({provider:'youtube',youtubeId:'../bad'}),/Invalid/);
 });

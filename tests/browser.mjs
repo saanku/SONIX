@@ -19,7 +19,7 @@ await page.locator('.new-playlist').click();
 await page.locator('#playlist-form input').fill('Night favorites');
 await page.locator('#playlist-form button').click();
 await page.locator('.main-nav [data-view="home"]').click();
-await page.getByRole('button',{name:'Add After Hours to playlist',exact:true}).click();
+await page.getByRole('button',{name:'Add After Hours to playlist',exact:true}).first().click();
 await page.locator('[data-save-track]').filter({hasText:'Night favorites'}).click();
 await page.locator('.side-playlist').filter({hasText:'Night favorites'}).click();
 assert.equal(await page.locator('#main > .track-table .track-row').count(),1);

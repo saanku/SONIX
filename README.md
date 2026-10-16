@@ -21,37 +21,22 @@ npm run preview
 
 Press **Space** to play/pause and **/** to focus search. Import audio using the sidebar or Library. Audio files are kept in IndexedDB on that device. Playlists, history, and likes are saved in local storage. Clearing browser data removes this local collection.
 
-## Connect the Supabase backend
+## YouTube Data API v3
 
-1. Create a Supabase project.
-2. Run `supabase/schema.sql` in its SQL editor. It creates one private library document per account, protected by Row Level Security. This small personal app stores playlists, favorites, track metadata, and history together; it does not upload audio files.
-3. Copy `.env.example` to `.env.local` and set:
+Existing local API credentials have been removed. GitHub deployments use the repository's existing Supabase URL and publishable key for account sync; local playlists and imports also work without cloud configuration.
 
-```dotenv
-VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=YOUR-PUBLISHABLE-KEY
-```
+1. In [Google Cloud](https://console.cloud.google.com/apis/library/youtube.googleapis.com), enable **YouTube Data API v3** for your project and create an API key.
+2. Restrict the key to **YouTube Data API v3** and HTTP referrers for your local and deployed website.
+3. Set `VITE_YOUTUBE_API_KEY=` in `.env.local` to your key and restart Vite. Alternatively, open **Full songs ? Add API key** to enter it for the current browser-tab session.
+4. For deployment, set the GitHub Actions variable `VITE_YOUTUBE_API_KEY` and rebuild.
 
-4. In Supabase Authentication, enable email/password sign-in. Set Site URL and allowed redirects to your local/deployed SONIX URLs. Create your account through SONIX and confirm the email if confirmation is enabled. For a strictly personal instance, disable new user sign-ups after creating your account.
-5. Restart Vite, open the avatar menu, and sign in. For hosting, configure these same two values at build time (instructions below).
+Vite keys are visible to browser users; website and API restrictions are essential. No key is bundled by default.
 
-Only a **publishable key** belongs in the frontend. Never place a service-role key, secret key, or database password in a `VITE_` variable. RLS isolates each user's document. The app saves changes on-device first and debounces cloud writes. Account sync is a simple library snapshot, not collaborative editing: avoid editing the same playlist concurrently on two devices. Local audio must be imported separately on each device; cloud metadata does not contain the file bytes.
+Search uses [YouTube Data API v3 search.list](https://developers.google.com/youtube/data/docs/search/list), followed by videos.list for durations and availability. Results use token-based pagination and a five-minute memory cache. Quota and configuration errors appear in the catalog. Search requests consume your project's API quota.
 
-Without credentials, SONIX works in device-only mode and does not simulate successful cloud sign-in. Run `node scripts/check-backend.mjs` after configuring `.env.local` to check authentication and table availability without printing credentials. `PGRST205` means you need to run `supabase/schema.sql`. A permissions error for anonymous table access is expected after the schema is secured; full read/write verification requires signing in. The app distinguishes successful sign-in from successful library sync, and keeps an account-scoped local backup if signing out while cloud writes are unavailable.
+Playback uses the visible [YouTube IFrame Player](https://developers.google.com/youtube/iframe_api_reference), with play/pause, seeking, volume, queue, shuffle and repeat controls. The Data API does not provide direct audio streams or offline downloads. Some videos may become unavailable or disallow embedding; use their YouTube link. If autoplay is blocked, press Play inside the video.
 
-This app is a client-rendered Vite application, so it uses `VITE_SUPABASE_*` variables, not Next.js `NEXT_PUBLIC_*` variables. Both requested Supabase packages are installed; `@supabase/ssr` is reserved for a future server-rendered implementation and is not imported into the current app.
-
-## Music and discovery
-
-### Jamendo
-
-Open **Full songs** in the sidebar or `#music` to explore the Jamendo catalog.
-
-Jamendo requires your own public API client ID from https://devportal.jamendo.com/. The catalog includes singles and album tracks, with 48 tracks per page, Previous/Next navigation, total result counts, full-catalog search, and Popular/Newest/Song name/Catalog order sorting. Pages replace the visible list to keep rendering responsive. Jamendo opens by default when configured. Select **Add client ID** to connect on this device. To enable it for everyone on your deployment, set `VITE_JAMENDO_CLIENT_ID` in `.env.local` and the GitHub repository Actions variables, then rebuild. Do not use a client secret. Until configured, Jamendo shows setup instructions and makes no API requests.
-
-Favorites and playlists save track metadata, not temporary streaming URLs. Source attribution and available license links appear in the player. Remote audio is not uploaded to Supabase or cached for offline downloads. Search results are cached in memory for five minutes. Catalog coverage and availability depend on the providers; this does not supply every commercial release. Previous provider metadata remains in storage but is no longer displayed or requested.
-
-Official references: https://developer.jamendo.com/v3.0/tracks.
+Favorites and playlists retain video metadata. The previous Jamendo client ID is removed from browser local storage on startup; previous provider tracks are no longer displayed.
 
 - The six included SONIX Originals are original 32-second instrumental synthesizer sketches generated by `scripts/create-assets.py`. They are playable samples, not commercial songs or a licensed commercial streaming catalog.
 - Your imported, browser-supported audio files play in full. Unsupported codecs produce an error instead of simulated playback.
@@ -62,17 +47,17 @@ Original-sample generation uses Python's standard library. Photographs were down
 
 1. Push this project to a GitHub repository with default branch `main`.
 2. In **Settings → Pages**, select **GitHub Actions** as the source.
-3. For cloud sync, add repository **Actions variables** named `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. These are public frontend configuration; never add a service-role key here.
+3. Add the repository **Actions variable** `VITE_YOUTUBE_API_KEY` for YouTube search.
 4. Run **Publish SONIX** from Actions, or push a commit to `main`.
-5. Once deployed, add the HTTPS address to Supabase Auth's URL settings.
+5. Add the deployed HTTPS address to the YouTube key's allowed HTTP referrers.
 6. Install from Safari's **Share → Add to Home Screen** on iPhone, or Chrome's **Install app** on Android.
 
 The relative Vite base supports GitHub Pages repository subpaths. Service worker caching retains the visited app shell and images for offline use; it does not cache remote services or automatically download audio. Locally imported audio remains available offline after the app has been loaded. Rebuild after changing environment configuration.
 
 ## Verification
 
-`npm test` covers storage validation, favorites, queue transitions, library merging, provider parsing, availability checks, and streaming URL resolution. `node tests/browser.mjs` runs browser checks against the dev server on port 5173 (install Chromium with `npx playwright install chromium` first, or set `BROWSER_EXECUTABLE` to an installed Chromium executable). It checks desktop/mobile layout, real playback, playlist persistence, favorites, search, audio import, queue, and writes screenshots to ignored `test-results/`.
+`npm test` covers storage validation, favorites, queue transitions, library merging, YouTube metadata, token pagination, cache invalidation, quota errors, and playback identifier validation. `node tests/browser.mjs` runs browser checks against the dev server on port 5173 (install Chromium with `npx playwright install chromium` first, or set `BROWSER_EXECUTABLE` to an installed Chromium executable). It checks desktop/mobile layout, real playback, playlist persistence, favorites, search, audio import, queue, and writes screenshots to ignored `test-results/`.
 
-`node tests/catalog-browser.mjs` checks live Jamendo pagination, search, sorting, playback, mobile layout, and the absence of removed-provider requests. Set `SONIX_URL` to test a deployment.
+`node tests/catalog-browser.mjs` checks mocked YouTube search, pagination, favorites, and mobile layout without a live API key. Set `SONIX_URL` to test a deployment.
 
 No hosting, GitHub repository, or Supabase project is provisioned automatically by the local code. Usage must remain within the chosen providers' free allowances.
