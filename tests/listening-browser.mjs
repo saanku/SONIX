@@ -1,3 +1,4 @@
+import {mockAccount,signIn} from './auth-fixture.mjs';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
@@ -5,6 +6,7 @@ const browser=await chromium.launch({headless:true,executablePath:process.env.BR
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
+ await mockAccount(page);
  await page.clock.install();
  await page.addInitScript(()=>{
   sessionStorage.setItem('sonix-youtube-api-key','test-key');
@@ -25,6 +27,7 @@ try {
  });
  const base=process.env.SONIX_URL||'http://127.0.0.1:5173/';
  await page.goto(base+'#music');
+ await signIn(page);
  await page.locator('[data-track="youtube:abcdefghijk"]').first().click();
  await page.waitForFunction(()=>window.testPlayer?.state===1);
  assert.equal(await page.locator('#youtube-panel').isVisible(),true);
@@ -48,7 +51,7 @@ try {
  await page.getByRole('button',{name:'Close queue',exact:true}).click();
  await page.locator('#seek').fill('40');await page.locator('#seek').dispatchEvent('input');
  await page.locator('#play-toggle').click();
- assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sonix-session')).position),72);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sonix-session-11111111-1111-4111-8111-111111111111')).position),72);
  // Reload restores position and queue without starting playback.
  await page.goto(base+'#home');await page.reload();
  await page.locator('.continue-card').waitFor();
@@ -79,7 +82,7 @@ try {
  assert.equal(await page.locator('#sleep-label').textContent(),'Sleep');
  await page.getByRole('button',{name:'Sleep timer',exact:true}).click();await page.getByRole('button',{name:'15 min',exact:true}).click();
  await page.getByRole('button',{name:'Sleep timer',exact:true}).click();await page.getByRole('button',{name:'Cancel timer',exact:true}).click();
- assert.equal(await page.evaluate(()=>localStorage.getItem('sonix-sleep')),null);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('sonix-sleep-11111111-1111-4111-8111-111111111111')),null);
  await page.locator('#play-toggle').click();await page.getByRole('button',{name:'Sleep timer',exact:true}).click();
  await page.getByRole('button',{name:'At end of this song',exact:true}).click();
  await page.evaluate(()=>window.testPlayer.stateChange(0));assert.equal(await page.evaluate(()=>window.testPlayer.state),2);
@@ -87,7 +90,7 @@ try {
  // A seek back to the beginning replaces the previously saved position.
  await page.locator('#seek').fill('0');await page.locator('#seek').dispatchEvent('input');
  await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
- assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sonix-session')).position),0);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sonix-session-11111111-1111-4111-8111-111111111111')).position),0);
  await page.getByRole('button',{name:'Open queue',exact:true}).click();await page.getByRole('button',{name:'Clear other songs',exact:true}).click();
  assert.deepEqual(await queueIds(),['youtube:lmnopqrstuv']);
  await page.getByRole('button',{name:'Close queue',exact:true}).click();

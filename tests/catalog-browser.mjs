@@ -1,9 +1,11 @@
-﻿import {chromium} from '@playwright/test';
+import {mockAccount,signIn} from './auth-fixture.mjs';
+import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE||undefined});
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[],requests=[];
  page.on('pageerror',e=>errors.push(e.message));
+ await mockAccount(page);
  await page.route('**/www.googleapis.com/youtube/v3/**',async route=>{
   const url=new URL(route.request().url());requests.push(url);
   const id=url.searchParams.get('pageToken')?'lmnopqrstuv':'abcdefghijk';
@@ -11,6 +13,7 @@ try {
   await route.fulfill({json:url.pathname.endsWith('/search')?{items:[{...item,id:{videoId:id}}],...(url.searchParams.has('pageToken')?{}:{nextPageToken:'second'})}:{items:[{...item,id:url.searchParams.get('id')}]}});
  });
  await page.goto((process.env.SONIX_URL||'http://127.0.0.1:5173/')+'#music');
+ await signIn(page);
  await page.getByRole('button',{name:/^(Add|Change) API key$/}).click();
  await page.locator('[name="apiKey"]').fill('test-browser-key');
  await page.getByRole('button',{name:'Connect YouTube',exact:true}).click();

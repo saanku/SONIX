@@ -1,6 +1,6 @@
 # SONIX
 
-A personal music app with a responsive charcoal-and-lime interface, installable PWA shell, local audio imports, persistent playlists and favorites, playback queue, shuffle, repeat, volume, seeking, keyboard controls, and optional Supabase account sync.
+A personal music app with a responsive charcoal-and-lime interface, sign-in and account creation, installable PWA shell, local audio imports, persistent playlists and favorites, playback queue, sleep timer, movable video player, and Supabase account sync.
 
 ## Run locally
 
@@ -12,6 +12,10 @@ npm run dev
 ```
 
 Open the URL printed by Vite, normally http://127.0.0.1:5173. To test from a phone on your Wi-Fi, run `npm run dev -- --host 0.0.0.0` and use your computer's LAN address. PWA installation requires HTTPS or localhost, so use the deployed site for installation on phones.
+
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in your ignored `.env.local` before testing account access. Use the project's public/publishable key, never a service-role key. Run `supabase/schema.sql` once for a new project; the existing project already uses this library schema. Enable email authentication and add your local and deployed SONIX URLs to the project's allowed redirect URLs.
+
+SONIX opens at the sign-in screen for signed-out visitors. **Create account** collects a name, email and password; if email confirmation is enabled, the app asks the listener to confirm their email before signing in. Returning sessions open the library automatically. Favorites, playlists and history sync to the account, with an account-specific local backup when cloud writes fail. Listening position and queue are saved per account on the device. Signing out stops playback and returns to the login screen. Imported audio stays in device storage, and passwords are handled by Supabase rather than saved by SONIX.
 
 ```sh
 npm test
@@ -30,7 +34,7 @@ Press **Space** to play/pause and **/** to focus search. Import audio using the 
 
 ## YouTube setup
 
-Existing local API credentials have been removed. GitHub deployments use the repository's existing Supabase URL and publishable key for account sync; local playlists and imports also work without cloud configuration.
+GitHub deployments use repository variables for the YouTube key and Supabase connection. Credentials are not committed to source. Supabase configuration is required for sign-in; missing configuration shows a setup error rather than a simulated account.
 
 1. In [Google Cloud](https://console.cloud.google.com/apis/library/youtube.googleapis.com), enable **YouTube Data API v3** for your project and create an API key.
 2. Restrict the key to **YouTube Data API v3** and HTTP referrers for your local and deployed website.
@@ -68,5 +72,7 @@ The relative Vite base supports GitHub Pages repository subpaths. Service worker
 `node tests/catalog-browser.mjs` checks mocked YouTube search, pagination, favorites, and mobile layout without a live API key. Set `SONIX_URL` to test a deployment.
 
 `node tests/listening-browser.mjs` checks session restoration, queue editing and drag ordering, compact-player positioning, and sleep timer expiry/cancellation using a mocked YouTube player and clock. It also accepts `SONIX_URL`. Unit tests cover session validation, queue operations, and timer deadlines.
+
+`node tests/auth-browser.mjs` checks the login gate, sign-up confirmation, password errors, session persistence, saved libraries, account isolation, and layouts from 320px to desktop. Browser suites mock Supabase to avoid creating test users or modifying real accounts. Use `BROWSER_EXECUTABLE` for an installed Chromium browser and `SONIX_URL` for an alternate local port or deployed build.
 
 No hosting, GitHub repository, or Supabase project is provisioned automatically by the local code. Usage must remain within the chosen providers' free allowances.

@@ -11,6 +11,7 @@ import { createPlayback } from './playback';
 import { sessionSnapshot, restoreSession, enqueue, moveQueue, sleepExpired } from './listening';
 import { setupFloatingPlayer } from './floating-player';
 import './listening.css';
+import { createAuthScreen } from './auth-screen';
 
 const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2};
 const $=s=>document.querySelector(s);
@@ -24,7 +25,8 @@ let youtubeApiKey=import.meta.env.VITE_YOUTUBE_API_KEY||'';try{localStorage.remo
 const music=createMusicClient({youtubeApiKey}), musicRegistry=new Map();
 let musicState={provider:'youtube',query:'',tracks:[],status:'idle',error:''}, musicVersion=0;
 const audio=createPlayback(message=>toast(message));audio.volume=.7;
-let resumePosition=0,lastSessionSave=0,sleepTimer=null;
+let resumePosition=0,lastSessionSave=0,sleepTimer=null,authVersion=0,openingAccount=null;
+const authScreen=createAuthScreen({getClient,onSignedIn:enterAccount});
 const allTracks=()=>[...originals,...library.tracks.filter(t=>!t.provider||supportedProvider(t.provider))];
 const trackById=id=>allTracks().find(t=>t.id===id)||musicRegistry.get(id);
 function registerMusicTracks(tracks){
@@ -94,6 +96,7 @@ function render(){
  refreshIcons();updatePlayer();
 }
 function renderMusic(){
+ if(!user)return;
  let section=$('#music-section');if(!section){section=document.createElement('section');section.id='music-section';section.className='music-section';const anchor=view==='home'?$('#main .hero'):$('#main .page-heading');anchor?.insertAdjacentElement('afterend',section);}
  const old=section.querySelector('input'),draft=old?.value,focused=document.activeElement===old;
  section.innerHTML=musicMarkup({state:musicState,view,query,configured:music.configured('youtube'),sectionHead,icon,esc,time,artwork,trackRows,favorites:library.favorites});
@@ -111,6 +114,7 @@ function navigate(next,id){view=next;selectedMix=id||null;const hash=`#${next}${
 window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1).split('/');view=['discover','audius'].includes(next)?'music':['home','search','library','liked','originals','mix','playlist','music'].includes(next)?next:'home';try{selectedMix=id?decodeURIComponent(id):null;}catch{selectedMix=null;}render();});
 function updatePlayer(){
  $('#play-toggle').innerHTML=icon(audio.paused?'play':'pause');$('#play-toggle').setAttribute('aria-label',audio.paused?'Play':'Pause');
+ if(!current){$('#player-title').textContent='Your next favorite awaits';$('#player-artist').textContent='Pick a track. Find your flow.';$('#player-art').src=artwork('night');$('#player-like').classList.remove('active');$('#elapsed').textContent='0:00';$('#duration').textContent='0:00';$('#seek').value=0;$('#seek').style.setProperty('--fill','0%');}
  if(current){$('#player-title').textContent=current.title;$('#player-artist').innerHTML=esc(current.artist)+(supportedProvider(current.provider)?` · <a href="${esc(safeWebUrl(current.permalink))}" target="_blank" rel="noopener noreferrer">${esc(providerName(current.provider))} ↗</a>${safeWebUrl(current.license)?` | <a href="${esc(safeWebUrl(current.license))}" target="_blank" rel="noopener noreferrer">License</a>`:''}`:'');$('#player-art').src=current.artwork||artwork('flower');$('#player-like').classList.toggle('active',library.favorites.includes(current.id));}
  if(view==='home'&&current&&!$('.continue-card'))$('#main').insertAdjacentHTML('afterbegin',continueMarkup());
  const card=$('.continue-card');if(card&&current){card.querySelector('strong').textContent=current.title;card.querySelector('img').src=current.artwork||artwork('flower');card.querySelector('[data-resume-artist]').textContent=current.artist;}
@@ -118,6 +122,7 @@ function updatePlayer(){
  $('#shuffle').classList.toggle('active',shuffle);$('#shuffle').setAttribute('aria-pressed',shuffle);$('#repeat').classList.toggle('active',repeat);$('#repeat').setAttribute('aria-pressed',repeat);refreshIcons();
 }
 async function playTrack(id,newQueue,startAt=0){
+ if(!user)return;
  const t=trackById(id);if(!t)return;saveSession();const token=++playbackToken;
  if(newQueue)queue=[...new Set(newQueue)].filter(trackById);if(!queue.includes(id))queue.push(id);
  audio.pause();audio.removeAttribute('src');audio.load();if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
@@ -132,7 +137,7 @@ async function playTrack(id,newQueue,startAt=0){
  renderQueue();
 }
 function step(direction){const idx=nextIndex(queue.indexOf(current?.id),queue.length,direction,shuffle&&direction===1);if(idx>=0)playTrack(queue[idx]);}
-function toggle(){if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id,undefined,resumePosition);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
+function toggle(){if(!user)return;if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id,undefined,resumePosition);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
 audio.addEventListener('play',()=>{if(checkSleep())return;updatePlayer();saveSession();});audio.addEventListener('pause',()=>{updatePlayer();saveSession();});audio.addEventListener('ended',()=>{if(sleepTimer?.endOfTrack){finishSleep();return;}if(repeat){audio.currentTime=0;audio.play().catch(()=>toast('Tap play to continue.'));}else step(1);});
 audio.addEventListener('timeupdate',()=>{if(!audio.getAttribute('src'))return;if(audio.duration>0)resumePosition=audio.currentTime;if(Date.now()-lastSessionSave>5000)saveSession();$('#elapsed').textContent=time(audio.currentTime);$('#duration').textContent=time(audio.duration);const percent=audio.duration?audio.currentTime/audio.duration*100:0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',`${percent}%`);});
 audio.addEventListener('error',()=>{if(audio.getAttribute('src'))toast('Audio could not load. Check your connection or import the file again.');});
@@ -146,10 +151,11 @@ function renderQueue(){
 function openDialog(content){$('#dialog-content').innerHTML=content;refreshIcons();if(!$('#dialog').open)$('#dialog').showModal();}
 function playlistDialog(trackId){if(trackId){openDialog(`<span class="eyebrow">KEEP THE GOOD ONES CLOSE</span><h2>Add to playlist</h2><div class="dialog-playlists">${library.playlists.map(p=>`<button class="secondary" data-save-track="${esc(trackId)}" data-target="${esc(p.id)}">${icon('list-music')}${esc(p.name)}</button>`).join('')}</div><button class="primary" data-action="new-for-track" data-id="${esc(trackId)}">${icon('plus')}New playlist</button>`);}else createPlaylistForm();}
 function createPlaylistForm(trackId=''){openDialog(`<span class="eyebrow">A MIX THAT IS ALL YOU</span><h2>Create a playlist</h2><form id="playlist-form" data-track-id="${esc(trackId)}"><label>Playlist name<input name="name" placeholder="Sunday state of mind" maxlength="80" required autofocus/></label><button class="primary" type="submit">${icon('plus')}Create playlist</button></form>`);}
-function accountDialog(){if(!configured){openDialog(`<span class="eyebrow">YOUR PERSONAL SPACE</span><h2>Make yourself at home.</h2><p>Your playlists and favorites are saved on this device. Import audio to build your own collection.</p><div class="info-box">${icon('check-circle-2')}Device library is ready</div><p class="muted">Cross-device sign-in will be available once your SONIX cloud is connected.</p><button class="primary" data-action="import">${icon('upload')}Import your music</button>`);return;}
- if(user){openDialog(`<span class="eyebrow">CONNECTED TO YOUR WORLD</span><h2>Your account</h2><p>${esc(user.email)}</p><button class="secondary" data-action="sync">${icon('check')}Sync library now</button><button class="secondary" data-action="logout">${icon('log-out')}Sign out</button>`);return;}
- openDialog(`<span class="eyebrow">YOUR MUSIC, EVERYWHERE</span><h2>Welcome to your space.</h2><p>Sign in to sync playlists and favorites across your devices.</p><form id="auth-form"><label>Email<input type="email" name="email" autocomplete="email" required/></label><label>Password<input type="password" name="password" minlength="8" autocomplete="current-password" required/></label><p id="auth-message" role="status"></p><div class="auth-actions"><button class="primary" type="submit" name="mode" value="signin">Sign in${icon('arrow-right')}</button><button class="secondary" type="submit" name="mode" value="signup">Create account</button></div></form>`);
+function accountDialog(){
+ if(!user){authScreen.show();return;}
+ openDialog(`<span class="eyebrow">YOUR PERSONAL SPACE</span><h2>Your account</h2><p>${esc(user.email)}</p><div class="info-box">${icon('check-circle-2')}${cloudSynced?'Your library is synced':'Saved on this device; cloud sync pending'}</div><button class="secondary" data-action="sync">${icon('check')}Sync library now</button><button class="secondary" data-action="logout">${icon('log-out')}Sign out</button>`);
 }
+
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,[data-view]');if(!b)return;
  if(b.dataset.view){navigate(b.dataset.view);if(b.dataset.view==='search')$('#search').focus();return;}
@@ -197,7 +203,13 @@ document.addEventListener('click',async e=>{
  if(a==='delete-playlist'){openDialog(`<h2>Delete this playlist?</h2><p>Your songs will stay in your library.</p><button class="danger" data-action="confirm-delete">Delete playlist</button><button class="secondary" data-action="close-dialog">Keep playlist</button>`);}
  if(a==='confirm-delete'){library.playlists=library.playlists.filter(p=>p.id!==selectedMix);persist();$('#dialog').close();navigate('library');}
  if(a==='sync'){try{await syncAccount();toast('Library synced');}catch(error){toast(cloudMessage(error));}}
- if(a==='logout'){clearTimeout(cloudTimer);await cloudChain;let backedUp=false;try{await writeCloud(user.id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}audio.pause();++playbackToken;audio.removeAttribute('src');current=null;queue=originals.map(t=>t.id);resumePosition=0;try{localStorage.removeItem('sonix-session');}catch{}user=null;cloudSynced=false;library=initialLibrary();localStorage.removeItem('sonix-library');localStorage.removeItem('sonix-library-owner');updateAccount();renderSidebar();render();$('#dialog').close();toast(backedUp?'Signed out. Unsynced changes are kept for your next sign-in.':'Signed out');}
+ if(a==='logout'){
+  if(!user)return;clearTimeout(cloudTimer);await cloudChain;
+  const id=user.id;let backedUp=false;
+  try{await writeCloud(id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}
+  const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}
+  leaveAccount(backedUp?'Signed out. Your unsynced changes are kept for your next sign-in.':'You are signed out. See you again soon.');
+ }
 });
 document.addEventListener('change',e=>{if(e.target.id==='music-sort')loadMusic(musicState.query,0,e.target.value);});
 document.addEventListener('submit',async e=>{
@@ -206,44 +218,94 @@ document.addEventListener('submit',async e=>{
  if(e.target.id==='music-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2)loadMusic(q);return;}
  if(e.target.id==='playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;const p={id:crypto.randomUUID(),name,tracks:e.target.dataset.trackId?[e.target.dataset.trackId]:[]};library.playlists.push(p);persist();$('#dialog').close();navigate('playlist',p.id);toast('Your new playlist is ready');}
  if(e.target.id==='edit-playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;library.playlists.find(p=>p.id===selectedMix).name=name;persist();$('#dialog').close();render();}
- if(e.target.id==='auth-form'){e.preventDefault();const form=e.target;const data=new FormData(form);const mode=e.submitter?.value;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{const c=await getClient();const payload={email:data.get('email').trim(),password:data.get('password')};const {data:result,error}=mode==='signup'?await c.auth.signUp({...payload,options:{emailRedirectTo:location.origin+location.pathname}}):await c.auth.signInWithPassword(payload);if(error)throw error;if(result.session){user=result.session.user;updateAccount();$('#dialog').close();try{await syncAccount();toast('Welcome to your space');}catch(error){toast(cloudMessage(error));}}else $('#auth-message').textContent='Check your email to confirm your account, then sign in.';}catch(err){const message=form.querySelector('#auth-message');if(message)message.textContent=err.message;}finally{form.querySelectorAll('button').forEach(b=>b.disabled=false);}}
+
 });
 $('#search').addEventListener('input',e=>{query=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>navigate('search'),120);});
 document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement&&e.target.closest('#music-section')&&e.target.src.startsWith('https://'))e.target.src=artwork('flower');},true);
 $('#file-input').addEventListener('change',async e=>{const files=[...e.target.files];let count=0;for(const file of files){if(!file.type.startsWith('audio/')&&!/\.(mp3|wav|m4a|ogg|flac)$/i.test(file.name))continue;const id=`local-${file.name}-${file.size}-${file.lastModified}`;try{await saveAudio(id,file);if(!library.tracks.some(t=>t.id===id))library.tracks.push({id,title:file.name.replace(/\.[^.]+$/,''),artist:'Your music',album:'Imported collection',artwork:artwork('flower'),local:true,duration:0});count++;}catch{toast('Could not save audio. Device storage may be full.');break;}}persist();navigate('library');toast(`${count} ${count===1?'track':'tracks'} imported to this device`);e.target.value='';});
-document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||$('#dialog').open)return;if(e.key===' '){e.preventDefault();toggle();}if(e.key==='/'){e.preventDefault();$('#search').focus();}if(e.key==='Escape')$('#queue-panel').hidden=true;});
+document.addEventListener('keydown',e=>{if(!user)return;if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||$('#dialog').open)return;if(e.key===' '){e.preventDefault();toggle();}if(e.key==='/'){e.preventDefault();$('#search').focus();}if(e.key==='Escape')$('#queue-panel').hidden=true;});
 $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog'))$('#dialog').close();});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 if('mediaSession' in navigator){for(const [action,fn] of Object.entries({play:()=>{if(audio.paused)toggle();},pause:()=>audio.pause(),previoustrack:()=>step(-1),nexttrack:()=>step(1),seekto:d=>{if(Number.isFinite(audio.duration))audio.currentTime=d.seekTime;}})){try{navigator.mediaSession.setActionHandler(action,fn);}catch{}}}
 function updateAccount(){$('#account-label').innerHTML=user?`${esc(user.email?.split('@')[0])}<small>${cloudSynced?'Personal cloud connected':'Signed in · sync pending'}</small>`:'Your personal space<small>Made for your ears only</small>';}
-async function syncAccount(){if(!user)return;cloudLoading=true;cloudSynced=false;clearTimeout(cloudTimer);try{await cloudChain;const owner=localStorage.getItem('sonix-library-owner');if(owner&&owner!==user.id){localStorage.setItem(`sonix-library-backup-${owner}`,JSON.stringify(library));library=initialLibrary();}const backup=localStorage.getItem(`sonix-library-backup-${user.id}`);if(backup){try{library=mergeLibraries(library,JSON.parse(backup));}catch{}}persist();const remote=await readCloud(user.id);library=mergeLibraries(library,remote);persist();await writeCloud(user.id,library);localStorage.removeItem(`sonix-library-backup-${user.id}`);cloudSynced=true;}finally{cloudLoading=false;updateAccount();render();}}
-async function initCloud(){try{const c=await getClient();if(!c)return;const {data,error}=await c.auth.getSession();if(error)throw error;user=data.session?.user||null;updateAccount();if(user)await syncAccount();c.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'){user=session?.user||null;updateAccount();}});}catch(error){cloudSynced=false;updateAccount();toast(cloudMessage(error));}}
+async function syncAccount(){
+ if(!user)return;const id=user.id;cloudLoading=true;cloudSynced=false;clearTimeout(cloudTimer);
+ try{
+  await cloudChain;if(user?.id!==id)return;
+  const owner=localStorage.getItem('sonix-library-owner');
+  if(owner&&owner!==id){localStorage.setItem(`sonix-library-backup-${owner}`,JSON.stringify(library));library=initialLibrary();}
+  const backup=localStorage.getItem(`sonix-library-backup-${id}`);if(backup){try{library=mergeLibraries(library,JSON.parse(backup));}catch{}}
+  persist();const remote=await readCloud(id);if(user?.id!==id)return;
+  library=mergeLibraries(library,remote);persist();await writeCloud(id,library);if(user?.id!==id)return;
+  localStorage.removeItem(`sonix-library-backup-${id}`);cloudSynced=true;
+ }finally{if(user?.id===id){cloudLoading=false;updateAccount();render();}}
+}
+function listeningKey(name){return user?`sonix-${name}-${user.id}`:`sonix-${name}`;}
+function leaveAccount(message='Sign in to return to your music.'){
+ ++authVersion;openingAccount=null;clearTimeout(cloudTimer);saveSession();
+ if(user){try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));}catch{}}
+ audio.pause();++playbackToken;audio.removeAttribute('src');current=null;queue=originals.map(t=>t.id);resumePosition=0;sleepTimer=null;
+ user=null;cloudSynced=false;cloudLoading=false;library=initialLibrary();musicRegistry.clear();
+ musicState={provider:'youtube',query:'',tracks:[],status:'idle',error:''};++musicVersion;
+ try{localStorage.removeItem('sonix-library');localStorage.removeItem('sonix-library-owner');}catch{}
+ $('#dialog').close();$('#queue-panel').hidden=true;view='home';selectedMix=null;location.hash='#home';authScreen.show('signin',message);updateAccount();updatePlayer();updateSleepLabel();
+}
+async function enterAccount(session){
+ const id=session?.user?.id;if(!id)return;
+ if(openingAccount?.id===id)return openingAccount.promise;
+ if(user?.id===id&&!$('#app').hidden){user=session.user;updateAccount();return;}
+ if(user&&user.id!==id)leaveAccount();
+ const version=++authVersion;user=session.user;authScreen.loading('Loading your library...');
+ try{const owner=localStorage.getItem('sonix-library-owner');if(!owner||owner===id){for(const name of ['session','sleep']){const legacy=localStorage.getItem(`sonix-${name}`);if(legacy&&!localStorage.getItem(listeningKey(name)))localStorage.setItem(listeningKey(name),legacy);localStorage.removeItem(`sonix-${name}`);}}}catch{}
+ const promise=(async()=>{
+  let warning='';
+  try{await syncAccount();}catch(error){warning=cloudMessage(error);}
+  if(version!==authVersion||user?.id!==id)return;
+  restoreListening();updateAccount();renderSidebar();render();updateSleepLabel();authScreen.hide();
+  if(warning)toast(warning);$('#main').focus({preventScroll:true});
+ })();
+ openingAccount={id,promise};try{await promise;}finally{if(openingAccount?.promise===promise)openingAccount=null;}
+}
+async function initCloud(){
+ authScreen.loading();
+ try{
+  const c=await getClient();if(!c){authScreen.error('Account sign-in is not configured yet. Please try again later.');return;}
+  c.auth.onAuthStateChange((event,session)=>{
+   if(event==='INITIAL_SESSION')return;
+   if(event==='TOKEN_REFRESHED'){if(user?.id===session?.user?.id){user=session.user;updateAccount();}return;}
+   if(event==='SIGNED_OUT')setTimeout(()=>leaveAccount(),0);
+   if(event==='SIGNED_IN')setTimeout(()=>enterAccount(session).catch(()=>authScreen.error('Could not open your account. Please try signing in again.')),0);
+  });
+  const {data,error}=await c.auth.getSession();if(error)throw error;
+  if(data.session)await enterAccount(data.session);else authScreen.show();
+ }catch{authScreen.error('Could not connect to your account. Check your connection and try signing in.');}
+}
 let [initialView,initialId]=location.hash.slice(1).split('/');if(['discover','audius'].includes(initialView))initialView='music';if(['home','search','library','liked','originals','mix','playlist','music'].includes(initialView)){view=initialView;try{selectedMix=decodeURIComponent(initialId||'');}catch{}}
 function continueMarkup(){return `<section class="continue-card"><img src="${esc(current.artwork||artwork('flower'))}" alt=""/><div><span class="eyebrow">CONTINUE LISTENING</span><strong>${esc(current.title)}</strong><p><span data-resume-artist>${esc(current.artist)}</span> &middot; <span id="resume-time">${time(resumePosition)}</span> into your song</p></div><button class="primary" data-action="continue">${icon(audio.paused?'play':'pause')}<span>${audio.paused?'Resume':'Pause'}</span></button></section>`;}
 function saveSession(){
- if(!current)return;
+ if(!user||!current)return;
  if(audio.getAttribute('src')&&audio.duration>0)resumePosition=audio.currentTime;
  const snapshot=sessionSnapshot({current,queue,position:resumePosition,shuffle,repeat,volume:audio.volume,muted:audio.muted},trackById);
- try{localStorage.setItem('sonix-session',JSON.stringify(snapshot));}catch{}
+ try{localStorage.setItem(listeningKey('session'),JSON.stringify(snapshot));}catch{}
  lastSessionSave=Date.now();
 }
 function restoreListening(){
  try{
-  const saved=JSON.parse(localStorage.getItem('sonix-session'));
+  const saved=JSON.parse(localStorage.getItem(listeningKey('session')));
   for(const t of (Array.isArray(saved?.tracks)?saved.tracks:[]).slice(0,200)){
    if(t?.provider==='youtube'&&/^[\w-]{11}$/.test(t.youtubeId||'')&&t.id===`youtube:${t.youtubeId}`&&typeof t.title==='string')musicRegistry.set(t.id,{...t,artwork:safeWebUrl(t.artwork),permalink:`https://www.youtube.com/watch?v=${t.youtubeId}`});
   }
   const restored=restoreSession(saved,trackById);
   if(restored){({current,queue,shuffle,repeat}=restored);resumePosition=restored.position;audio.volume=restored.volume;audio.muted=restored.muted;$('#volume').value=audio.volume;$('#seek').value=current.duration?resumePosition/current.duration*100:0;$('#seek').style.setProperty('--fill',String($('#seek').value)+'%');$('#elapsed').textContent=time(resumePosition);$('#duration').textContent=time(current.duration);}
-  const timer=JSON.parse(localStorage.getItem('sonix-sleep'));
+  const timer=JSON.parse(localStorage.getItem(listeningKey('sleep')));
   if(timer?.endOfTrack===true)sleepTimer={endOfTrack:true};else if(Number.isFinite(timer?.deadline)&&timer.deadline>Date.now()&&timer.deadline<=Date.now()+180*60000)sleepTimer={deadline:timer.deadline};
  }catch{}
 }
 function sleepDialog(){openDialog(`<span class="eyebrow">WIND DOWN</span><h2>Sleep timer</h2><p id="sleep-status">${sleepDescription()}</p><div class="sleep-presets">${[15,30,45,60].map(m=>`<button class="secondary" data-sleep-minutes="${m}">${m} min</button>`).join('')}</div><button class="secondary" data-action="sleep-end">At end of this song</button><form id="sleep-form"><label>Custom minutes (1–180)<input name="minutes" type="number" min="1" max="180" step="1" value="20" required/></label><button class="primary" type="submit">Set timer</button></form>${sleepTimer?'<button class="text-button" data-action="sleep-cancel">Cancel timer</button>':''}<p>Playback pauses when the timer ends. Keep SONIX open for the timer to run on time.</p>`);}
 function sleepDescription(){return sleepTimer?.endOfTrack?'Playback will pause at the end of this song.':sleepTimer?.deadline?`Pausing in ${time(Math.max(0,Math.ceil((sleepTimer.deadline-Date.now())/1000)))}.`:'Choose when to pause your music.';}
-function setSleep(timer){sleepTimer=timer;try{if(timer)localStorage.setItem('sonix-sleep',JSON.stringify(timer));else localStorage.removeItem('sonix-sleep');}catch{}updateSleepLabel();$('#dialog').close();toast(timer?'Sleep timer set':'Sleep timer cancelled');}
+function setSleep(timer){sleepTimer=timer;try{if(timer)localStorage.setItem(listeningKey('sleep'),JSON.stringify(timer));else localStorage.removeItem(listeningKey('sleep'));}catch{}updateSleepLabel();$('#dialog').close();toast(timer?'Sleep timer set':'Sleep timer cancelled');}
 function updateSleepLabel(){const label=$('#sleep-label');label.textContent=sleepTimer?.endOfTrack?'End of song':sleepTimer?.deadline?time(Math.max(0,Math.ceil((sleepTimer.deadline-Date.now())/1000))):'Sleep';label.closest('button').classList.toggle('active',Boolean(sleepTimer));const status=$('#sleep-status');if(status)status.textContent=sleepDescription();}
-function finishSleep(){sleepTimer=null;try{localStorage.removeItem('sonix-sleep');}catch{}++playbackToken;audio.pause();saveSession();updatePlayer();updateSleepLabel();toast('Sleep timer finished. Playback paused.');}
+function finishSleep(){sleepTimer=null;try{localStorage.removeItem(listeningKey('sleep'));}catch{}++playbackToken;audio.pause();saveSession();updatePlayer();updateSleepLabel();toast('Sleep timer finished. Playback paused.');}
 function checkSleep(){if(!sleepExpired(sleepTimer))return false;finishSleep();return true;}
 setInterval(()=>{checkSleep();updateSleepLabel();},1000);
 window.addEventListener('pagehide',saveSession);
@@ -253,7 +315,6 @@ $('#queue-panel').addEventListener('dragstart',e=>{const row=e.target.closest('[
 $('#queue-panel').addEventListener('dragover',e=>{if(draggedQueue!==null&&e.target.closest('[data-queue-index]')){e.preventDefault();e.dataTransfer.dropEffect='move';}});
 $('#queue-panel').addEventListener('drop',e=>{const row=e.target.closest('[data-queue-index]');if(draggedQueue===null||!row)return;e.preventDefault();queue=moveQueue(queue,draggedQueue,Number(row.dataset.queueIndex));draggedQueue=null;saveSession();renderQueue();});
 $('#queue-panel').addEventListener('dragend',()=>{draggedQueue=null;});
-restoreListening();
 const floatingPlayer=setupFloatingPlayer($('#youtube-panel'),$('#video-drag'));
 renderSidebar();render();initCloud();updateSleepLabel();
 if('serviceWorker' in navigator&&import.meta.env.PROD)window.addEventListener('load',()=>navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>{}));
