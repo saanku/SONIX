@@ -9,12 +9,13 @@ export async function mockAccount(page,{confirmSignup=true}={}) {
     const request=route.request(),path=new URL(request.url()).pathname;
     if(request.method()==='OPTIONS'){await route.fulfill({status:204,headers});return;}
     let body={};try{body=request.postDataJSON()||{};}catch{}
-    requests.push({path,email:body.email});
+    requests.push({path,email:body.email,type:body.type,redirect:new URL(request.url()).searchParams.get('redirect_to')});
     if(path.endsWith('/token')){
       if(body.password==='wrong-password'){await route.fulfill({status:400,headers,json:{error:'invalid_grant',error_description:'Invalid login credentials'}});return;}
       active=user(body.email||active?.email||'first@example.com');await route.fulfill({headers,json:session(active)});return;
     }
     if(path.endsWith('/signup')){const created=user(body.email);await route.fulfill({headers,json:confirmSignup?created:session(created)});return;}
+    if(path.endsWith('/resend')){await route.fulfill({headers,json:{}});return;}
     if(path.endsWith('/logout')){active=null;await route.fulfill({status:204,headers});return;}
     if(path.endsWith('/user')){await route.fulfill({headers,json:active||user('first@example.com')});return;}
     await route.fulfill({headers,json:{}});

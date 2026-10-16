@@ -17,6 +17,8 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in your ignored `.en
 
 SONIX opens at the sign-in screen for signed-out visitors. **Create account** collects a name, email and password; if email confirmation is enabled, the app asks the listener to confirm their email before signing in. Returning sessions open the library automatically. Favorites, playlists and history sync to the account, with an account-specific local backup when cloud writes fail. Listening position and queue are saved per account on the device. Signing out stops playback and returns to the login screen. Imported audio stays in device storage, and passwords are handled by Supabase rather than saved by SONIX.
 
+If the confirmation email is missing, check Spam/Junk, enter the same email on the sign-in screen, and choose **Resend confirmation email**. A successful request does not guarantee delivery; the app enforces a 60-second retry delay and displays service errors. Normal password sign-in does not send an email. The project owner must check Supabase Auth logs, sender/SMTP configuration, and sending limits if delivery still fails. Supabase's default mail service restricts recipients; configure a production SMTP provider for public sign-ups: https://supabase.com/docs/guides/auth/auth-smtp. Keep the site's URL in the allowed redirect list.
+
 ```sh
 npm test
 npm run build
@@ -74,5 +76,7 @@ The relative Vite base supports GitHub Pages repository subpaths. Service worker
 `node tests/listening-browser.mjs` checks session restoration, queue editing and drag ordering, compact-player positioning, and sleep timer expiry/cancellation using a mocked YouTube player and clock. It also accepts `SONIX_URL`. Unit tests cover session validation, queue operations, and timer deadlines.
 
 `node tests/auth-browser.mjs` checks the login gate, sign-up confirmation, password errors, session persistence, saved libraries, account isolation, and layouts from 320px to desktop. Browser suites mock Supabase to avoid creating test users or modifying real accounts. Use `BROWSER_EXECUTABLE` for an installed Chromium browser and `SONIX_URL` for an alternate local port or deployed build.
+
+`node tests/auth-email-browser.mjs` tests confirmation resending, cooldown, rate-limit errors, and mail-service errors without sending real emails.
 
 No hosting, GitHub repository, or Supabase project is provisioned automatically by the local code. Usage must remain within the chosen providers' free allowances.
