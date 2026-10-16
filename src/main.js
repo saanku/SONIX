@@ -8,6 +8,9 @@ import { configured, getClient, readCloud, writeCloud, cloudMessage } from './cl
 import { createMusicClient, supportedProvider, providerName, safeWebUrl } from './music';
 import { musicMarkup } from './music-view';
 import { createPlayback } from './playback';
+import { sessionSnapshot, restoreSession, enqueue, moveQueue, sleepExpired } from './listening';
+import { setupFloatingPlayer } from './floating-player';
+import './listening.css';
 
 const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2};
 const $=s=>document.querySelector(s);
@@ -21,6 +24,7 @@ let youtubeApiKey=import.meta.env.VITE_YOUTUBE_API_KEY||'';try{localStorage.remo
 const music=createMusicClient({youtubeApiKey}), musicRegistry=new Map();
 let musicState={provider:'youtube',query:'',tracks:[],status:'idle',error:''}, musicVersion=0;
 const audio=createPlayback(message=>toast(message));audio.volume=.7;
+let resumePosition=0,lastSessionSave=0,sleepTimer=null;
 const allTracks=()=>[...originals,...library.tracks.filter(t=>!t.provider||supportedProvider(t.provider))];
 const trackById=id=>allTracks().find(t=>t.id===id)||musicRegistry.get(id);
 function registerMusicTracks(tracks){
@@ -46,8 +50,8 @@ $('#app').innerHTML=`
  <div class="sidebar-bottom"><div class="little-wave">▂ ▅ ▃ ▇ ▅ ▂</div><strong>A space that sounds like you.</strong><p>Your music. Your mood. Your rules.</p><button data-action="import">${icon('upload')}Import your music</button></div>
  <button class="account" data-action="account"><span class="avatar">S</span><span id="account-label">Your personal space<small>Made for your ears only</small></span>${icon('chevron-down')}</button>
 </aside>
-<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><label class="global-search">${icon('search')}<input id="search" placeholder="What do you want to listen to?" autocomplete="off" aria-label="Search music"/><kbd>/</kbd></label><div class="top-actions"><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>SONIX<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
-<section id="youtube-panel" hidden aria-label="YouTube video player"><div id="youtube-player"></div></section>
+<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><label class="global-search">${icon('search')}<input id="search" placeholder="What do you want to listen to?" autocomplete="off" aria-label="Search music"/><kbd>/</kbd></label><div class="top-actions"><button class="icon-button" data-action="queue" aria-label="Open queue" title="Queue">${icon('list-music')}</button><button class="sleep-button" data-action="sleep" aria-label="Sleep timer" title="Sleep timer"><span aria-hidden="true">&#9687;</span><span id="sleep-label">Sleep</span></button><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>SONIX<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
+<section id="youtube-panel" hidden aria-label="YouTube video player"><div class="video-toolbar"><button id="video-drag" aria-label="Move video player" title="Drag to move, or use arrow keys">&#10303; <span>YouTube &middot; drag to move</span></button><button class="icon-button" data-action="reset-video" aria-label="Reset video position" title="Reset position">&#8600;</button><button class="icon-button" data-action="close-video" aria-label="Pause and hide video" title="Pause and hide video">${icon('x')}</button></div><div class="video-frame"><div id="youtube-player"></div></div></section>
 <aside id="queue-panel" class="queue-panel" hidden></aside>
 <div class="player"><div class="now-playing"><button class="now-art" data-action="now-playing" aria-label="Show current collection"><img id="player-art" src="${artwork('night')}" alt="Current track artwork"/></button><div class="now-meta"><strong id="player-title">Your next favorite awaits</strong><span id="player-artist">Pick a track. Find your flow.</span></div><button id="player-like" class="icon-button" data-action="like-current" aria-label="Like current song">${icon('heart')}</button></div><div class="transport"><div class="transport-buttons"><button id="shuffle" class="icon-button" data-action="shuffle" aria-label="Shuffle" aria-pressed="false">${icon('shuffle')}</button><button class="icon-button" data-action="previous" aria-label="Previous song">${icon('skip-back')}</button><button id="play-toggle" class="play-toggle" data-action="toggle" aria-label="Play">${icon('play')}</button><button class="icon-button" data-action="next" aria-label="Next song">${icon('skip-forward')}</button><button id="repeat" class="icon-button" data-action="repeat" aria-label="Repeat" aria-pressed="false">${icon('repeat')}</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek position"/><span id="duration">0:00</span></div></div><div class="player-options"><span class="quality">PERSONAL MIX</span><button class="icon-button" data-action="queue" aria-label="Show queue">${icon('list-music')}</button><button class="icon-button" data-action="mute" id="mute" aria-label="Mute">${icon('volume-2')}</button><input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume"/></div></div>
 <nav class="mobile-nav"><button data-view="home">${icon('home')}Home</button><button data-view="search">${icon('search')}Search</button><button data-view="library">${icon('library')}Library</button><button data-action="account">${icon('user')}You</button></nav>
@@ -59,7 +63,7 @@ function renderSidebar(){
 }
 function sectionHead(eyebrow,title,action='',label='View all'){return `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h2>${title}</h2></div>${action?`<button class="text-button" data-action="${action}">${label}${icon('arrow-right')}</button>`:''}</div>`;}
 function mixCard(m){return `<button class="mix-card" data-mix="${m.id}"><div class="mix-art"><img loading="lazy" src="${artwork(m.art)}" alt="${esc(m.name)} cover"/><div class="cover-brand">SONIX / SELECTS</div><span class="cover-tag">${m.tag}</span><strong style="color:${m.color}">${esc(m.name)}</strong><span class="card-play">${icon('play')}</span></div><h3>${m.name}</h3><p>${m.sub}</p></button>`;}
-function trackRows(list){return list.length?`<div class="track-table"><div class="track-table-head"><span>#</span><span>TITLE</span><span>ALBUM</span><span>TIME</span><span></span></div>${list.map((t,i)=>`<div class="track-row ${current?.id===t.id?'is-current':''}"><button class="track-number" data-track="${esc(t.id)}" aria-label="Play ${esc(t.title)}"><span>${current?.id===t.id?'♫':String(i+1).padStart(2,'0')}</span>${icon('play')}</button><button class="track-info" data-track="${esc(t.id)}"><img loading="lazy" src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span></button><span class="track-album">${esc(t.album||'Your uploads')}</span><span class="track-duration">${time(t.duration)}</span><div class="track-actions"><button class="icon-button ${library.favorites.includes(t.id)?'active':''}" data-like="${esc(t.id)}" aria-label="${library.favorites.includes(t.id)?'Unlike':'Like'} ${esc(t.title)}">${icon('heart')}</button><button class="icon-button" data-add="${esc(t.id)}" aria-label="Add ${esc(t.title)} to playlist">${icon('plus')}</button></div></div>`).join('')}</div>`:`<div class="empty-state">${icon('headphones')}<h3>Your soundtrack starts here</h3><p>Import your music or explore SONIX Originals to add songs.</p><button class="primary" data-action="import">${icon('upload')}Import music</button></div>`;}
+function trackRows(list){return list.length?`<div class="track-table"><div class="track-table-head"><span>#</span><span>TITLE</span><span>ALBUM</span><span>TIME</span><span></span></div>${list.map((t,i)=>`<div class="track-row ${current?.id===t.id?'is-current':''}"><button class="track-number" data-track="${esc(t.id)}" aria-label="Play ${esc(t.title)}"><span>${current?.id===t.id?'♫':String(i+1).padStart(2,'0')}</span>${icon('play')}</button><button class="track-info" data-track="${esc(t.id)}"><img loading="lazy" src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span></button><span class="track-album">${esc(t.album||'Your uploads')}</span><span class="track-duration">${time(t.duration)}</span><div class="track-actions"><button class="icon-button track-menu" data-queue-menu="${esc(t.id)}" aria-label="Queue options for ${esc(t.title)}">${icon('more-horizontal')}</button><button class="icon-button ${library.favorites.includes(t.id)?'active':''}" data-like="${esc(t.id)}" aria-label="${library.favorites.includes(t.id)?'Unlike':'Like'} ${esc(t.title)}">${icon('heart')}</button><button class="icon-button" data-add="${esc(t.id)}" aria-label="Add ${esc(t.title)} to playlist">${icon('plus')}</button></div></div>`).join('')}</div>`:`<div class="empty-state">${icon('headphones')}<h3>Your soundtrack starts here</h3><p>Import your music or explore SONIX Originals to add songs.</p><button class="primary" data-action="import">${icon('upload')}Import music</button></div>`;}
 function render(){
  const main=$('#main');
  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('selected',b.dataset.view===view));
@@ -86,6 +90,7 @@ function render(){
  main.innerHTML=`<div class="page-heading"><span class="eyebrow">YOUTUBE MUSIC</span><h1>Full songs. Fresh discoveries<span class="green">.</span></h1><p>Explore the YouTube catalog, stream full tracks, and save your favorites.</p></div>`;
  }
  if(['home','search','music'].includes(view))renderMusic();
+ if(view==='home'&&current)main.insertAdjacentHTML('afterbegin',continueMarkup());
  refreshIcons();updatePlayer();
 }
 function renderMusic(){
@@ -107,30 +112,37 @@ window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1)
 function updatePlayer(){
  $('#play-toggle').innerHTML=icon(audio.paused?'play':'pause');$('#play-toggle').setAttribute('aria-label',audio.paused?'Play':'Pause');
  if(current){$('#player-title').textContent=current.title;$('#player-artist').innerHTML=esc(current.artist)+(supportedProvider(current.provider)?` · <a href="${esc(safeWebUrl(current.permalink))}" target="_blank" rel="noopener noreferrer">${esc(providerName(current.provider))} ↗</a>${safeWebUrl(current.license)?` | <a href="${esc(safeWebUrl(current.license))}" target="_blank" rel="noopener noreferrer">License</a>`:''}`:'');$('#player-art').src=current.artwork||artwork('flower');$('#player-like').classList.toggle('active',library.favorites.includes(current.id));}
+ if(view==='home'&&current&&!$('.continue-card'))$('#main').insertAdjacentHTML('afterbegin',continueMarkup());
+ const card=$('.continue-card');if(card&&current){card.querySelector('strong').textContent=current.title;card.querySelector('img').src=current.artwork||artwork('flower');card.querySelector('[data-resume-artist]').textContent=current.artist;}
+ const resume=$('[data-action="continue"]');if(resume){resume.innerHTML=icon(audio.paused?'play':'pause')+'<span>'+(audio.paused?'Resume':'Pause')+'</span>';const position=$('#resume-time');if(position)position.textContent=time(resumePosition);}
  $('#shuffle').classList.toggle('active',shuffle);$('#shuffle').setAttribute('aria-pressed',shuffle);$('#repeat').classList.toggle('active',repeat);$('#repeat').setAttribute('aria-pressed',repeat);refreshIcons();
 }
-async function playTrack(id,newQueue){
- const t=trackById(id);if(!t)return;const token=++playbackToken;
- if(newQueue)queue=newQueue;if(!queue.includes(id))queue=allTracks().map(t=>t.id);
+async function playTrack(id,newQueue,startAt=0){
+ const t=trackById(id);if(!t)return;saveSession();const token=++playbackToken;
+ if(newQueue)queue=[...new Set(newQueue)].filter(trackById);if(!queue.includes(id))queue.push(id);
  audio.pause();audio.removeAttribute('src');audio.load();if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
- current=t;updatePlayer();$('#player-artist').textContent='Loading audio…';$('#elapsed').textContent='0:00';$('#duration').textContent=time(t.duration);$('#seek').value=0;$('#seek').style.setProperty('--fill','0%');
+ current=t;resumePosition=startAt;updatePlayer();$('#player-artist').textContent='Loading audio…';$('#elapsed').textContent='0:00';$('#duration').textContent=time(t.duration);$('#seek').value=0;$('#seek').style.setProperty('--fill','0%');
  try{
  let url=t.url;if(supportedProvider(t.provider)){const resolved=await music.resolve(t);if(token!==playbackToken)return;Object.assign(t,resolved.track);url=resolved.url;}if(t.local){const file=await loadAudio(id);if(token!==playbackToken)return;if(!file)throw Error('This audio file is stored on another device. Import it on this device to play.');objectUrl=URL.createObjectURL(file);url=objectUrl;}
- if(!url)throw Error('No playable audio is available.');if(token!==playbackToken)return;audio.src=url;await audio.play();if(token!==playbackToken)return;
- rememberMusic(id);library.history=[id,...library.history.filter(x=>x!==id)].slice(0,50);persist();updatePlayer();
+ if(!url)throw Error('No playable audio is available.');if(token!==playbackToken)return;audio.src=url;await audio.play(startAt);if(token!==playbackToken)return;
+ rememberMusic(id);library.history=[id,...library.history.filter(x=>x!==id)].slice(0,50);persist();saveSession();updatePlayer();
  document.querySelectorAll('.track-row').forEach(row=>row.classList.toggle('is-current',row.querySelector('[data-track]')?.dataset.track===id));
  if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:t.album,artwork:[{src:new URL(t.artwork||artwork('flower'),location.href).href,sizes:'640x640',type:'image/jpeg'}]});}
  }catch(e){if(token!==playbackToken)return;toast(supportedProvider(t.provider)?e.message||'This service could not play the track. Please try another.':e.message?.includes('another device')?e.message:'Could not play this file. Try another track or supported audio format.');updatePlayer();}
  renderQueue();
 }
 function step(direction){const idx=nextIndex(queue.indexOf(current?.id),queue.length,direction,shuffle&&direction===1);if(idx>=0)playTrack(queue[idx]);}
-function toggle(){if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
-audio.addEventListener('play',updatePlayer);audio.addEventListener('pause',updatePlayer);audio.addEventListener('ended',()=>{if(repeat){audio.currentTime=0;audio.play().catch(()=>toast('Tap play to continue.'));}else step(1);});
-audio.addEventListener('timeupdate',()=>{$('#elapsed').textContent=time(audio.currentTime);$('#duration').textContent=time(audio.duration);const percent=audio.duration?audio.currentTime/audio.duration*100:0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',`${percent}%`);});
+function toggle(){if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id,undefined,resumePosition);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
+audio.addEventListener('play',()=>{if(checkSleep())return;updatePlayer();saveSession();});audio.addEventListener('pause',()=>{updatePlayer();saveSession();});audio.addEventListener('ended',()=>{if(sleepTimer?.endOfTrack){finishSleep();return;}if(repeat){audio.currentTime=0;audio.play().catch(()=>toast('Tap play to continue.'));}else step(1);});
+audio.addEventListener('timeupdate',()=>{if(!audio.getAttribute('src'))return;if(audio.duration>0)resumePosition=audio.currentTime;if(Date.now()-lastSessionSave>5000)saveSession();$('#elapsed').textContent=time(audio.currentTime);$('#duration').textContent=time(audio.duration);const percent=audio.duration?audio.currentTime/audio.duration*100:0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',`${percent}%`);});
 audio.addEventListener('error',()=>{if(audio.getAttribute('src'))toast('Audio could not load. Check your connection or import the file again.');});
 $('#seek').addEventListener('input',e=>{if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/100*audio.duration;});
-$('#volume').addEventListener('input',e=>{audio.volume=Number(e.target.value);audio.muted=false;$('#mute').innerHTML=icon(audio.volume?'volume-2':'volume-x');refreshIcons();});
-function renderQueue(){const panel=$('#queue-panel');if(panel.hidden)return;panel.innerHTML=`<div class="section-heading"><h2>Up next</h2><button class="icon-button" data-action="queue" aria-label="Close queue">${icon('x')}</button></div><p class="muted">Your listening session</p>${queue.map(trackById).filter(Boolean).map(t=>`<button class="queue-track ${current?.id===t.id?'active':''}" data-track="${esc(t.id)}"><img src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span>${icon(current?.id===t.id&&!audio.paused?'volume-2':'play')}</button>`).join('')}`;refreshIcons();}
+$('#volume').addEventListener('input',e=>{audio.volume=Number(e.target.value);audio.muted=false;$('#mute').innerHTML=icon(audio.volume?'volume-2':'volume-x');refreshIcons();saveSession();});
+function renderQueue(){
+ const panel=$('#queue-panel');if(panel.hidden)return;
+ panel.innerHTML=`<div class="section-heading"><h2>Your queue</h2><button class="icon-button" data-action="queue" aria-label="Close queue">${icon('x')}</button></div><p class="muted">Drag songs to reorder, or use the arrow buttons.</p><button class="text-button" data-action="clear-queue" ${queue.length<2?'disabled':''}>Clear other songs</button><div class="queue-list">${queue.map(trackById).filter(Boolean).map((t,i)=>`<div class="queue-item ${current?.id===t.id?'active':''}" data-queue-index="${i}" draggable="true"><button class="queue-track" data-track="${esc(t.id)}"><img src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${current?.id===t.id?'Now playing &middot; ':''}${esc(t.artist)}</small></span></button><div class="queue-item-actions"><button data-move-queue="${i}" data-direction="-1" aria-label="Move ${esc(t.title)} up" ${i===0?'disabled':''}>&uarr;</button><button data-move-queue="${i}" data-direction="1" aria-label="Move ${esc(t.title)} down" ${i===queue.length-1?'disabled':''}>&darr;</button><button data-remove-queue="${esc(t.id)}" aria-label="Remove ${esc(t.title)} from queue" ${current?.id===t.id?'disabled':''}>${icon('x')}</button></div></div>`).join('')}</div>`;
+ refreshIcons();
+}
 function openDialog(content){$('#dialog-content').innerHTML=content;refreshIcons();if(!$('#dialog').open)$('#dialog').showModal();}
 function playlistDialog(trackId){if(trackId){openDialog(`<span class="eyebrow">KEEP THE GOOD ONES CLOSE</span><h2>Add to playlist</h2><div class="dialog-playlists">${library.playlists.map(p=>`<button class="secondary" data-save-track="${esc(trackId)}" data-target="${esc(p.id)}">${icon('list-music')}${esc(p.name)}</button>`).join('')}</div><button class="primary" data-action="new-for-track" data-id="${esc(trackId)}">${icon('plus')}New playlist</button>`);}else createPlaylistForm();}
 function createPlaylistForm(trackId=''){openDialog(`<span class="eyebrow">A MIX THAT IS ALL YOU</span><h2>Create a playlist</h2><form id="playlist-form" data-track-id="${esc(trackId)}"><label>Playlist name<input name="name" placeholder="Sunday state of mind" maxlength="80" required autofocus/></label><button class="primary" type="submit">${icon('plus')}Create playlist</button></form>`);}
@@ -143,14 +155,26 @@ document.addEventListener('click',async e=>{
  if(b.dataset.view){navigate(b.dataset.view);if(b.dataset.view==='search')$('#search').focus();return;}
  if(b.dataset.mix){navigate('mix',b.dataset.mix);return;}if(b.dataset.playlist){navigate('playlist',b.dataset.playlist);return;}
  if(b.dataset.musicTrack){playTrack(b.dataset.musicTrack,musicState.tracks.map(t=>t.id));return;}
- if(b.dataset.track){const list=$('#main').dataset.tracks;playTrack(b.dataset.track,b.closest('#music-section')?musicState.tracks.map(t=>t.id):list&&['mix','playlist','liked','library','originals'].includes(view)?JSON.parse(list):undefined);return;}
+ if(b.dataset.track){const list=$('#main').dataset.tracks;playTrack(b.dataset.track,b.closest('#queue-panel')?undefined:b.closest('#music-section')?musicState.tracks.map(t=>t.id):list&&['mix','playlist','liked','library','originals'].includes(view)?JSON.parse(list):undefined);return;}
  if(b.dataset.like){rememberMusic(b.dataset.like);toggleFavorite(library,b.dataset.like);persist();render();return;}
  if(b.dataset.add){rememberMusic(b.dataset.add);persist();playlistDialog(b.dataset.add);return;}
  if(b.dataset.filter){activeFilter=b.dataset.filter;render();return;}
  if(b.dataset.saveTrack){const p=library.playlists.find(p=>p.id===b.dataset.target);if(p&&!p.tracks.includes(b.dataset.saveTrack))p.tracks.push(b.dataset.saveTrack);persist();$('#dialog').close();toast('Added to your playlist');if(view==='playlist')render();return;}
+ if(b.dataset.queueMenu){const t=trackById(b.dataset.queueMenu);if(t)openDialog(`<h2>Queue options</h2><p>${esc(t.title)}</p><div class="dialog-playlists"><button class="secondary" data-enqueue="${esc(t.id)}" data-next="true">Play next</button><button class="secondary" data-enqueue="${esc(t.id)}">Add to queue</button></div>`);return;}
+ if(b.dataset.enqueue){const id=b.dataset.enqueue;rememberMusic(id);queue=enqueue(queue,id,current?.id,b.dataset.next==='true');persist();saveSession();renderQueue();$('#dialog').close();toast(b.dataset.next?'Added to play next':'Added to queue');return;}
+ if(b.dataset.moveQueue!==undefined){const from=Number(b.dataset.moveQueue);queue=moveQueue(queue,from,from+Number(b.dataset.direction));saveSession();renderQueue();return;}
+ if(b.dataset.removeQueue){if(b.dataset.removeQueue!==current?.id)queue=queue.filter(id=>id!==b.dataset.removeQueue);saveSession();renderQueue();return;}
+ if(b.dataset.sleepMinutes){setSleep({deadline:Date.now()+Number(b.dataset.sleepMinutes)*60000});return;}
  const a=b.dataset.action;
+ if(a==='continue')toggle();
+ if(a==='sleep')sleepDialog();
+ if(a==='sleep-end')setSleep({endOfTrack:true});
+ if(a==='sleep-cancel')setSleep(null);
+ if(a==='clear-queue'){queue=current?[current.id]:[];saveSession();renderQueue();}
+ if(a==='close-video'){++playbackToken;audio.pause();$('#youtube-panel').hidden=true;updatePlayer();saveSession();$('#play-toggle').focus();}
+ if(a==='reset-video')floatingPlayer.reset();
  if(a==='toggle')toggle();if(a==='next')step(1);if(a==='previous'){if(audio.currentTime>3)audio.currentTime=0;else step(-1);}
- if(a==='shuffle'){shuffle=!shuffle;updatePlayer();}if(a==='repeat'){repeat=!repeat;updatePlayer();}
+ if(a==='shuffle'){shuffle=!shuffle;updatePlayer();saveSession();}if(a==='repeat'){repeat=!repeat;updatePlayer();saveSession();}
  if(a==='like-current'&&current){rememberMusic(current.id);toggleFavorite(library,current.id);persist();render();}
  if(a==='browse-music')navigate('music');if(a==='music-trending'){const input=$('#music-form input');if(input)input.value='';loadMusic('');}if(a==='music-retry')loadMusic(musicState.query,musicState.page||0);
  if(a==='music-next'||a==='music-previous'){if(musicState.status==='loading')return;await loadMusic(musicState.query,Math.max(0,(musicState.page||0)+(a==='music-next'?1:-1)));$('#music-section')?.scrollIntoView({block:'start'});}
@@ -173,10 +197,11 @@ document.addEventListener('click',async e=>{
  if(a==='delete-playlist'){openDialog(`<h2>Delete this playlist?</h2><p>Your songs will stay in your library.</p><button class="danger" data-action="confirm-delete">Delete playlist</button><button class="secondary" data-action="close-dialog">Keep playlist</button>`);}
  if(a==='confirm-delete'){library.playlists=library.playlists.filter(p=>p.id!==selectedMix);persist();$('#dialog').close();navigate('library');}
  if(a==='sync'){try{await syncAccount();toast('Library synced');}catch(error){toast(cloudMessage(error));}}
- if(a==='logout'){clearTimeout(cloudTimer);await cloudChain;let backedUp=false;try{await writeCloud(user.id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}user=null;cloudSynced=false;library=initialLibrary();localStorage.removeItem('sonix-library');localStorage.removeItem('sonix-library-owner');updateAccount();renderSidebar();render();$('#dialog').close();toast(backedUp?'Signed out. Unsynced changes are kept for your next sign-in.':'Signed out');}
+ if(a==='logout'){clearTimeout(cloudTimer);await cloudChain;let backedUp=false;try{await writeCloud(user.id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}audio.pause();++playbackToken;audio.removeAttribute('src');current=null;queue=originals.map(t=>t.id);resumePosition=0;try{localStorage.removeItem('sonix-session');}catch{}user=null;cloudSynced=false;library=initialLibrary();localStorage.removeItem('sonix-library');localStorage.removeItem('sonix-library-owner');updateAccount();renderSidebar();render();$('#dialog').close();toast(backedUp?'Signed out. Unsynced changes are kept for your next sign-in.':'Signed out');}
 });
 document.addEventListener('change',e=>{if(e.target.id==='music-sort')loadMusic(musicState.query,0,e.target.value);});
 document.addEventListener('submit',async e=>{
+ if(e.target.id==='sleep-form'){e.preventDefault();const minutes=Number(new FormData(e.target).get('minutes'));if(Number.isInteger(minutes)&&minutes>=1&&minutes<=180)setSleep({deadline:Date.now()+minutes*60000});return;}
  if(e.target.id==='youtube-form'){e.preventDefault();const value=String(new FormData(e.target).get('apiKey')).trim();if(!/^[A-Za-z0-9_-]{4,100}$/.test(value)){toast('Enter a valid YouTube API key.');return;}youtubeApiKey=value;try{sessionStorage.setItem('sonix-youtube-api-key',value);}catch{}music.setYoutubeApiKey(value);$('#dialog').close();loadMusic('');return;}
  if(e.target.id==='music-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2)loadMusic(q);return;}
  if(e.target.id==='playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;const p={id:crypto.randomUUID(),name,tracks:e.target.dataset.trackId?[e.target.dataset.trackId]:[]};library.playlists.push(p);persist();$('#dialog').close();navigate('playlist',p.id);toast('Your new playlist is ready');}
@@ -189,10 +214,46 @@ $('#file-input').addEventListener('change',async e=>{const files=[...e.target.fi
 document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||$('#dialog').open)return;if(e.key===' '){e.preventDefault();toggle();}if(e.key==='/'){e.preventDefault();$('#search').focus();}if(e.key==='Escape')$('#queue-panel').hidden=true;});
 $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog'))$('#dialog').close();});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
-if('mediaSession' in navigator){for(const [action,fn] of Object.entries({play:()=>audio.play(),pause:()=>audio.pause(),previoustrack:()=>step(-1),nexttrack:()=>step(1),seekto:d=>{if(Number.isFinite(audio.duration))audio.currentTime=d.seekTime;}})){try{navigator.mediaSession.setActionHandler(action,fn);}catch{}}}
+if('mediaSession' in navigator){for(const [action,fn] of Object.entries({play:()=>{if(audio.paused)toggle();},pause:()=>audio.pause(),previoustrack:()=>step(-1),nexttrack:()=>step(1),seekto:d=>{if(Number.isFinite(audio.duration))audio.currentTime=d.seekTime;}})){try{navigator.mediaSession.setActionHandler(action,fn);}catch{}}}
 function updateAccount(){$('#account-label').innerHTML=user?`${esc(user.email?.split('@')[0])}<small>${cloudSynced?'Personal cloud connected':'Signed in · sync pending'}</small>`:'Your personal space<small>Made for your ears only</small>';}
 async function syncAccount(){if(!user)return;cloudLoading=true;cloudSynced=false;clearTimeout(cloudTimer);try{await cloudChain;const owner=localStorage.getItem('sonix-library-owner');if(owner&&owner!==user.id){localStorage.setItem(`sonix-library-backup-${owner}`,JSON.stringify(library));library=initialLibrary();}const backup=localStorage.getItem(`sonix-library-backup-${user.id}`);if(backup){try{library=mergeLibraries(library,JSON.parse(backup));}catch{}}persist();const remote=await readCloud(user.id);library=mergeLibraries(library,remote);persist();await writeCloud(user.id,library);localStorage.removeItem(`sonix-library-backup-${user.id}`);cloudSynced=true;}finally{cloudLoading=false;updateAccount();render();}}
 async function initCloud(){try{const c=await getClient();if(!c)return;const {data,error}=await c.auth.getSession();if(error)throw error;user=data.session?.user||null;updateAccount();if(user)await syncAccount();c.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'){user=session?.user||null;updateAccount();}});}catch(error){cloudSynced=false;updateAccount();toast(cloudMessage(error));}}
 let [initialView,initialId]=location.hash.slice(1).split('/');if(['discover','audius'].includes(initialView))initialView='music';if(['home','search','library','liked','originals','mix','playlist','music'].includes(initialView)){view=initialView;try{selectedMix=decodeURIComponent(initialId||'');}catch{}}
-renderSidebar();render();initCloud();
+function continueMarkup(){return `<section class="continue-card"><img src="${esc(current.artwork||artwork('flower'))}" alt=""/><div><span class="eyebrow">CONTINUE LISTENING</span><strong>${esc(current.title)}</strong><p><span data-resume-artist>${esc(current.artist)}</span> &middot; <span id="resume-time">${time(resumePosition)}</span> into your song</p></div><button class="primary" data-action="continue">${icon(audio.paused?'play':'pause')}<span>${audio.paused?'Resume':'Pause'}</span></button></section>`;}
+function saveSession(){
+ if(!current)return;
+ if(audio.getAttribute('src')&&audio.duration>0)resumePosition=audio.currentTime;
+ const snapshot=sessionSnapshot({current,queue,position:resumePosition,shuffle,repeat,volume:audio.volume,muted:audio.muted},trackById);
+ try{localStorage.setItem('sonix-session',JSON.stringify(snapshot));}catch{}
+ lastSessionSave=Date.now();
+}
+function restoreListening(){
+ try{
+  const saved=JSON.parse(localStorage.getItem('sonix-session'));
+  for(const t of (Array.isArray(saved?.tracks)?saved.tracks:[]).slice(0,200)){
+   if(t?.provider==='youtube'&&/^[\w-]{11}$/.test(t.youtubeId||'')&&t.id===`youtube:${t.youtubeId}`&&typeof t.title==='string')musicRegistry.set(t.id,{...t,artwork:safeWebUrl(t.artwork),permalink:`https://www.youtube.com/watch?v=${t.youtubeId}`});
+  }
+  const restored=restoreSession(saved,trackById);
+  if(restored){({current,queue,shuffle,repeat}=restored);resumePosition=restored.position;audio.volume=restored.volume;audio.muted=restored.muted;$('#volume').value=audio.volume;$('#seek').value=current.duration?resumePosition/current.duration*100:0;$('#seek').style.setProperty('--fill',String($('#seek').value)+'%');$('#elapsed').textContent=time(resumePosition);$('#duration').textContent=time(current.duration);}
+  const timer=JSON.parse(localStorage.getItem('sonix-sleep'));
+  if(timer?.endOfTrack===true)sleepTimer={endOfTrack:true};else if(Number.isFinite(timer?.deadline)&&timer.deadline>Date.now()&&timer.deadline<=Date.now()+180*60000)sleepTimer={deadline:timer.deadline};
+ }catch{}
+}
+function sleepDialog(){openDialog(`<span class="eyebrow">WIND DOWN</span><h2>Sleep timer</h2><p id="sleep-status">${sleepDescription()}</p><div class="sleep-presets">${[15,30,45,60].map(m=>`<button class="secondary" data-sleep-minutes="${m}">${m} min</button>`).join('')}</div><button class="secondary" data-action="sleep-end">At end of this song</button><form id="sleep-form"><label>Custom minutes (1–180)<input name="minutes" type="number" min="1" max="180" step="1" value="20" required/></label><button class="primary" type="submit">Set timer</button></form>${sleepTimer?'<button class="text-button" data-action="sleep-cancel">Cancel timer</button>':''}<p>Playback pauses when the timer ends. Keep SONIX open for the timer to run on time.</p>`);}
+function sleepDescription(){return sleepTimer?.endOfTrack?'Playback will pause at the end of this song.':sleepTimer?.deadline?`Pausing in ${time(Math.max(0,Math.ceil((sleepTimer.deadline-Date.now())/1000)))}.`:'Choose when to pause your music.';}
+function setSleep(timer){sleepTimer=timer;try{if(timer)localStorage.setItem('sonix-sleep',JSON.stringify(timer));else localStorage.removeItem('sonix-sleep');}catch{}updateSleepLabel();$('#dialog').close();toast(timer?'Sleep timer set':'Sleep timer cancelled');}
+function updateSleepLabel(){const label=$('#sleep-label');label.textContent=sleepTimer?.endOfTrack?'End of song':sleepTimer?.deadline?time(Math.max(0,Math.ceil((sleepTimer.deadline-Date.now())/1000))):'Sleep';label.closest('button').classList.toggle('active',Boolean(sleepTimer));const status=$('#sleep-status');if(status)status.textContent=sleepDescription();}
+function finishSleep(){sleepTimer=null;try{localStorage.removeItem('sonix-sleep');}catch{}++playbackToken;audio.pause();saveSession();updatePlayer();updateSleepLabel();toast('Sleep timer finished. Playback paused.');}
+function checkSleep(){if(!sleepExpired(sleepTimer))return false;finishSleep();return true;}
+setInterval(()=>{checkSleep();updateSleepLabel();},1000);
+window.addEventListener('pagehide',saveSession);
+document.addEventListener('visibilitychange',()=>{saveSession();checkSleep();});
+let draggedQueue=null;
+$('#queue-panel').addEventListener('dragstart',e=>{const row=e.target.closest('[data-queue-index]');if(!row)return;draggedQueue=Number(row.dataset.queueIndex);e.dataTransfer.setData('text/plain',String(draggedQueue));e.dataTransfer.effectAllowed='move';});
+$('#queue-panel').addEventListener('dragover',e=>{if(draggedQueue!==null&&e.target.closest('[data-queue-index]')){e.preventDefault();e.dataTransfer.dropEffect='move';}});
+$('#queue-panel').addEventListener('drop',e=>{const row=e.target.closest('[data-queue-index]');if(draggedQueue===null||!row)return;e.preventDefault();queue=moveQueue(queue,draggedQueue,Number(row.dataset.queueIndex));draggedQueue=null;saveSession();renderQueue();});
+$('#queue-panel').addEventListener('dragend',()=>{draggedQueue=null;});
+restoreListening();
+const floatingPlayer=setupFloatingPlayer($('#youtube-panel'),$('#video-drag'));
+renderSidebar();render();initCloud();updateSleepLabel();
 if('serviceWorker' in navigator&&import.meta.env.PROD)window.addEventListener('load',()=>navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>{}));

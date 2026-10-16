@@ -21,7 +21,14 @@ npm run preview
 
 Press **Space** to play/pause and **/** to focus search. Import audio using the sidebar or Library. Audio files are kept in IndexedDB on that device. Playlists, history, and likes are saved in local storage. Clearing browser data removes this local collection.
 
-## YouTube Data API v3
+## Listening controls
+
+- **Continue listening:** the Home card and Play button restore your last song, position, queue, shuffle, repeat, and volume on this device. Reloading never starts music automatically. Session metadata is saved periodically and when pausing or leaving the page; imported audio must still be available on the same device.
+- **Sleep timer:** use the clock in the top bar. Choose 15, 30, 45, or 60 minutes, a custom 1–180 minutes, or the end of the playing song. Set another timer to replace it, or choose Cancel timer. The deadline survives reloads. Browsers can suspend background tabs, so keep SONIX open for timely stopping; an overdue timer pauses playback when the tab wakes.
+- **Queue:** open it from the top bar or player. Use a song's three-dot menu for Play next or Add to queue. Drag rows to reorder on desktop, or use the up/down buttons on any device. Remove individual songs or clear everything except the current song. Queue selection preserves your edited order.
+- **Compact video player:** drag its header using a mouse or touch, or focus the header and use arrow keys. Position is remembered on this device and kept within the viewport. The reset button returns it to its default corner. Close pauses and hides the video; Play shows it again. YouTube playback continues to require a visible video player.
+
+## YouTube setup
 
 Existing local API credentials have been removed. GitHub deployments use the repository's existing Supabase URL and publishable key for account sync; local playlists and imports also work without cloud configuration.
 
@@ -59,5 +66,7 @@ The relative Vite base supports GitHub Pages repository subpaths. Service worker
 `npm test` covers storage validation, favorites, queue transitions, library merging, YouTube metadata, token pagination, cache invalidation, quota errors, and playback identifier validation. `node tests/browser.mjs` runs browser checks against the dev server on port 5173 (install Chromium with `npx playwright install chromium` first, or set `BROWSER_EXECUTABLE` to an installed Chromium executable). It checks desktop/mobile layout, real playback, playlist persistence, favorites, search, audio import, queue, and writes screenshots to ignored `test-results/`.
 
 `node tests/catalog-browser.mjs` checks mocked YouTube search, pagination, favorites, and mobile layout without a live API key. Set `SONIX_URL` to test a deployment.
+
+`node tests/listening-browser.mjs` checks session restoration, queue editing and drag ordering, compact-player positioning, and sleep timer expiry/cancellation using a mocked YouTube player and clock. It also accepts `SONIX_URL`. Unit tests cover session validation, queue operations, and timer deadlines.
 
 No hosting, GitHub repository, or Supabase project is provisioned automatically by the local code. Usage must remain within the chosen providers' free allowances.

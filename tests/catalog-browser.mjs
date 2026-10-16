@@ -11,7 +11,7 @@ try {
   await route.fulfill({json:url.pathname.endsWith('/search')?{items:[{...item,id:{videoId:id}}],...(url.searchParams.has('pageToken')?{}:{nextPageToken:'second'})}:{items:[{...item,id:url.searchParams.get('id')}]}});
  });
  await page.goto((process.env.SONIX_URL||'http://127.0.0.1:5173/')+'#music');
- await page.getByRole('button',{name:'Add API key',exact:true}).click();
+ await page.getByRole('button',{name:/^(Add|Change) API key$/}).click();
  await page.locator('[name="apiKey"]').fill('test-browser-key');
  await page.getByRole('button',{name:'Connect YouTube',exact:true}).click();
  await page.locator('[data-track="youtube:abcdefghijk"]').first().waitFor();
