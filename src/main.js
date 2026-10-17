@@ -54,6 +54,7 @@ $('#app').innerHTML=`
  <div id="sidebar-playlists"></div>
  <button class="new-playlist" data-action="create-playlist">${icon('plus')}Create playlist</button>
  <div class="sidebar-bottom"><div class="little-wave">▂ ▅ ▃ ▇ ▅ ▂</div><strong>A space that sounds like you.</strong><p>Your music. Your mood. Your rules.</p><button data-action="import">${icon('upload')}Import your music</button></div>
+ <button class="device-signout" data-action="logout">${icon('log-out')}Sign out of this device</button>
  <button class="account" data-action="account"><span class="avatar">S</span><span id="account-label">Your personal space<small>Made for your ears only</small></span>${icon('chevron-down')}</button>
 </aside>
 <div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><div class="top-actions"><button class="icon-button" data-action="connect" aria-label="Connect to a device" title="Connect to a device">${icon('monitor')}</button><button class="icon-button theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode">&#9728;</button><button class="icon-button" data-action="queue" aria-label="Open queue" title="Queue">${icon('list-music')}</button><button class="sleep-button" data-action="sleep" aria-label="Sleep timer" title="Sleep timer"><span aria-hidden="true">&#9687;</span><span id="sleep-label">Sleep</span></button><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>sanku inte lokham<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
@@ -226,7 +227,7 @@ function playlistDialog(trackId){if(trackId){openDialog(`<span class="eyebrow">K
 function createPlaylistForm(trackId=''){openDialog(`<span class="eyebrow">A MIX THAT IS ALL YOU</span><h2>Create a playlist</h2><form id="playlist-form" data-track-id="${esc(trackId)}"><label>Playlist name<input name="name" placeholder="Sunday state of mind" maxlength="80" required autofocus/></label><button class="primary" type="submit">${icon('plus')}Create playlist</button></form>`);}
 function accountDialog(){
  if(!user){authScreen.show();return;}
- openDialog(`<span class="eyebrow">YOUR PERSONAL SPACE</span><h2>Your account</h2><p>${esc(user.email)}</p><div class="info-box">${icon('check-circle-2')}${cloudSynced?'Your library is synced':'Saved on this device; cloud sync pending'}</div><button class="secondary" data-action="sync">${icon('check')}Sync library now</button><button class="secondary" data-action="logout">${icon('log-out')}Sign out</button>`);
+ openDialog(`<span class="eyebrow">YOUR PERSONAL SPACE</span><h2>Your account</h2><p>${esc(user.email)}</p><div class="info-box">${icon('check-circle-2')}${cloudSynced?'Your library is synced':'Saved on this device; cloud sync pending'}</div><button class="secondary" data-action="sync">${icon('check')}Sync library now</button><button class="secondary" data-action="logout">${icon('log-out')}Sign out of this device</button><p class="muted">Your account and cloud library stay saved. Other devices stay signed in.</p>`);
 }
 
 document.addEventListener('click',async e=>{
@@ -280,11 +281,15 @@ document.addEventListener('click',async e=>{
  if(a==='confirm-delete'){library.playlists=library.playlists.filter(p=>p.id!==selectedMix);persist();$('#dialog').close();navigate('library');}
  if(a==='sync'){try{await syncAccount();toast('Library synced');}catch(error){toast(cloudMessage(error));}}
  if(a==='logout'){
-  if(!user)return;clearTimeout(cloudTimer);await cloudChain;
-  const id=user.id;let backedUp=false;
-  try{await writeCloud(id,library);}catch{try{localStorage.setItem(`sonix-library-backup-${id}`,JSON.stringify(library));backedUp=true;}catch{toast('Could not preserve unsynced changes. Free device storage before signing out.');return;}}
-  const c=await getClient();const {error}=await c.auth.signOut();if(error){toast('Could not sign out. Try again.');return;}
-  leaveAccount(backedUp?'Signed out. Your unsynced changes are kept for your next sign-in.':'You are signed out. See you again soon.');
+  if(!user||b.disabled)return;b.disabled=true;
+  try{
+   clearTimeout(cloudTimer);await cloudChain;const id=user.id;
+   try{await writeCloud(id,library);}catch{toast('Could not save your latest library. Check your connection and try signing out again.');return;}
+   const c=await getClient();const {error}=await c.auth.signOut({scope:'local'});if(error){toast('Could not sign out. Check your connection and try again.');return;}
+   leaveAccount('Signed out of this device. Your account is still available on your other devices.');
+   for(const key of [`sonix-library-backup-${id}`,`sonix-session-${id}`,`sonix-sleep-${id}`,'sonix-session','sonix-sleep']){try{localStorage.removeItem(key);}catch{}}
+   document.querySelector('#entry-form')?.reset();
+  }finally{b.disabled=false;}
  }
 });
 document.addEventListener('change',e=>{if(e.target.id==='music-sort')loadMusic(musicState.query,0,e.target.value);});

@@ -15,3 +15,8 @@
 @media(max-width:680px){.music-section .mobile-search-form{display:flex}.auth-brand .brand-name{font-size:21px;max-width:190px}}
 
 #connect-devices .dialog-playlists{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin:18px 0}#connect-devices .secondary{white-space:normal;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:5px}#connect-devices small{font-size:11px;color:var(--muted)}#connect-devices .muted{margin-top:20px;font-size:12px}
+
+.device-signout{display:flex;align-items:center;gap:8px;padding:12px 8px;font-size:11px;color:var(--muted);border-top:1px solid var(--line)}
+
+.sidebar{overflow-y:auto}.device-signout{flex-shrink:0}
+

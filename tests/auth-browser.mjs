@@ -41,7 +41,7 @@ try{
  await page.reload();await page.locator('#app').waitFor({state:'visible'});
  assert.equal(await page.locator('#auth-root').isVisible(),false);
  assert.equal(await page.locator('#main h1').textContent(),'My saved songs');
- await page.locator('.top-actions [data-action="account"]').click();await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await page.locator('.top-actions [data-action="account"]').click();await page.locator('#dialog').getByRole('button',{name:'Sign out of this device',exact:true}).click();
  await page.locator('#auth-root').waitFor({state:'visible'});assert.equal(await page.locator('#app').isVisible(),false);
  await signIn(page,'second@example.com');
  assert.deepEqual(mock.libraries.get(secondUser).favorites,[]);assert.deepEqual(mock.libraries.get(secondUser).playlists,[]);
