@@ -1,6 +1,7 @@
 import './style.css';
 import {setupTheme} from './theme';
 import './music.css';
+import {createDiscovery} from './discovery';
 import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2 } from 'lucide';
 import { tracks as originals, mixes, artwork } from './catalog';
 import { initialLibrary, safeLibrary, toggleFavorite, nextIndex, mergeLibraries } from './library';
@@ -63,6 +64,8 @@ $('#app').innerHTML=`
 
 setupTheme();
 
+const discovery=createDiscovery({music,registerMusicTracks,playTrack,esc,artwork,active:()=>Boolean(user)&&['home','music'].includes(view)});
+
 function renderSidebar(){
  $('#like-count').textContent=`${library.favorites.length} songs`;
  $('#sidebar-playlists').innerHTML=library.playlists.map(p=>`<button class="side-playlist" data-playlist="${esc(p.id)}"><span>${icon('list-music')}</span><span>${esc(p.name)}<small>Playlist · ${p.tracks.length} songs</small></span></button>`).join('');refreshIcons();
@@ -101,7 +104,9 @@ function render(){
 }
 function renderMusic(){
  if(!user)return;
+ discovery.mount();
  let section=$('#music-section');if(!section){section=document.createElement('section');section.id='music-section';section.className='music-section';const anchor=view==='home'?$('#main .hero'):$('#main .page-heading');anchor?.insertAdjacentElement('afterend',section);}
+ const discoverySection=$('#language-discovery');if(discoverySection)section.before(discoverySection);
  const old=section.querySelector('input'),draft=old?.value,focused=document.activeElement===old;
  section.innerHTML=musicMarkup({state:musicState,view,query,configured:music.configured('youtube'),sectionHead,icon,esc,time,artwork,trackRows,favorites:library.favorites});
  if(draft!==undefined&&section.querySelector('input'))section.querySelector('input').value=draft;

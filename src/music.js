@@ -40,6 +40,13 @@ export function createMusicClient({youtubeApiKey='',fetcher=fetch,now=Date.now}=
       if(data.nextPageToken)tokens[page+1]=data.nextPageToken;else tokens.length=page+1;
       return {tracks:(details.items||[]).map(youtubeTrack).filter(Boolean),page,hasNext:Boolean(data.nextPageToken),total:null};
     },
+    async discovery({query,language, trending=false}){
+      const data=await request('search',{part:'snippet',type:'video',videoCategoryId:'10',videoEmbeddable:'true',videoSyndicated:'true',maxResults:'20',q:query,relevanceLanguage:language,regionCode:'IN',order:trending?'viewCount':'relevance',...(trending?{publishedAfter:new Date(now()-30*86400000).toISOString()}: {})});
+      const ids=(data.items||[]).map(youtubeTrack).filter(Boolean).map(t=>t.youtubeId);
+      if(!ids.length)return [];
+      const details=await request('videos',{part:'snippet,contentDetails,status',id:ids.join(',')});
+      return (details.items||[]).map(youtubeTrack).filter(t=>t&&t.duration>=60&&t.duration<=900);
+    },
     async resolve(track){if(!supportedProvider(track.provider)||! /^[\w-]{11}$/.test(track.youtubeId||''))throw Error('Invalid YouTube video.');return {track,url:'youtube:'+track.youtubeId};}
   };
 }
