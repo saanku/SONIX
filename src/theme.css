@@ -1,0 +1,16 @@
+.theme-toggle{flex-shrink:0;font-size:23px;min-width:36px;min-height:36px}
+.auth-theme{display:block;margin:0 0 16px auto;border:1px solid var(--line);border-radius:50%}
+:root[data-theme=light]{color-scheme:light;background:#f5f7f1;color:#20291d;--green:#47751e;--muted:#606b58;--line:#25391c20}
+[data-theme=light] :is(.sidebar,.topbar,.player,.mobile-nav,.queue-panel,dialog,.auth-shell){background:#f8faf4;color:#20291d;border-color:#d9e1d1}
+[data-theme=light] :is(.auth-story,.auth-tabs,.global-search,.chip,.date-pill,.playlist-tile,.empty-state,.catalog-search,.catalog-input,.provider-connect,.discovery-card,.continue-card,.video-toolbar){background:#e9efdf;border-color:#d1dcc5;color:#34422a}
+[data-theme=light] :is(input,select){background:#fff;color:#20291d;border-color:#bdcbb0}
+[data-theme=light] :is(.auth-card input,.auth-tabs button[aria-pressed=true]){background:#fff;color:#20291d;border-color:#bdcbb0}
+[data-theme=light] :is(.primary,.auth-submit,.chip.chosen,.card-play){background:#b7ed69;color:#18240f}
+[data-theme=light] :is(.secondary,.icon-button,.main-nav button,.side-liked,.side-playlist,.new-playlist,.account,.top-actions,.track-info strong,.now-meta strong,.queue-track strong,.playlist-tile h3,.music-card h3,.auth-brand,.auth-card h1,.auth-story h2){color:#25341c}
+[data-theme=light] :is(.eyebrow,.nav-label,.library-label,.track-table-head,.track-album,.track-duration,.now-meta span,.auth-intro,.auth-kicker,.auth-save-note p,.auth-footnote,.auth-story p){color:#606b58}
+[data-theme=light] button:hover{color:#315e15}
+[data-theme=light] :is(.hero,.mix-art,.auth-art,.release-art){color:#f4f8ef}
+[data-theme=light] .hero .secondary{color:#fff}
+[data-theme=light] .hero .green{color:#b7ed69}
+[data-theme=light] .play-toggle{background:#25341c;color:#fff}
+@media(max-width:600px){.top-actions{gap:5px}.top-actions .theme-toggle{min-width:32px;width:32px}}

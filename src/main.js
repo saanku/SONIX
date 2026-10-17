@@ -1,4 +1,5 @@
 import './style.css';
+import {setupTheme} from './theme';
 import './music.css';
 import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2 } from 'lucide';
 import { tracks as originals, mixes, artwork } from './catalog';
@@ -26,6 +27,7 @@ const music=createMusicClient({youtubeApiKey}), musicRegistry=new Map();
 let musicState={provider:'youtube',query:'',tracks:[],status:'idle',error:''}, musicVersion=0;
 const audio=createPlayback(message=>toast(message));audio.volume=.7;
 let resumePosition=0,lastSessionSave=0,sleepTimer=null,authVersion=0,openingAccount=null;
+let recommendationVersion=0;
 const authScreen=createAuthScreen({getClient,onSignedIn:enterAccount});
 const allTracks=()=>[...originals,...library.tracks.filter(t=>!t.provider||supportedProvider(t.provider))];
 const trackById=id=>allTracks().find(t=>t.id===id)||musicRegistry.get(id);
@@ -52,12 +54,14 @@ $('#app').innerHTML=`
  <div class="sidebar-bottom"><div class="little-wave">▂ ▅ ▃ ▇ ▅ ▂</div><strong>A space that sounds like you.</strong><p>Your music. Your mood. Your rules.</p><button data-action="import">${icon('upload')}Import your music</button></div>
  <button class="account" data-action="account"><span class="avatar">S</span><span id="account-label">Your personal space<small>Made for your ears only</small></span>${icon('chevron-down')}</button>
 </aside>
-<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><label class="global-search">${icon('search')}<input id="search" placeholder="What do you want to listen to?" autocomplete="off" aria-label="Search music"/><kbd>/</kbd></label><div class="top-actions"><button class="icon-button" data-action="queue" aria-label="Open queue" title="Queue">${icon('list-music')}</button><button class="sleep-button" data-action="sleep" aria-label="Sleep timer" title="Sleep timer"><span aria-hidden="true">&#9687;</span><span id="sleep-label">Sleep</span></button><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>SONIX<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
+<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><label class="global-search">${icon('search')}<input id="search" placeholder="What do you want to listen to?" autocomplete="off" aria-label="Search music"/><kbd>/</kbd></label><div class="top-actions"><button class="icon-button theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode">&#9728;</button><button class="icon-button" data-action="queue" aria-label="Open queue" title="Queue">${icon('list-music')}</button><button class="sleep-button" data-action="sleep" aria-label="Sleep timer" title="Sleep timer"><span aria-hidden="true">&#9687;</span><span id="sleep-label">Sleep</span></button><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>SONIX<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
 <section id="youtube-panel" hidden aria-label="YouTube video player"><div class="video-toolbar"><button id="video-drag" aria-label="Move video player" title="Drag to move, or use arrow keys">&#10303; <span>YouTube &middot; drag to move</span></button><button class="icon-button" data-action="reset-video" aria-label="Reset video position" title="Reset position">&#8600;</button><button class="icon-button" data-action="close-video" aria-label="Pause and hide video" title="Pause and hide video">${icon('x')}</button></div><div class="video-frame"><div id="youtube-player"></div></div></section>
 <aside id="queue-panel" class="queue-panel" hidden></aside>
 <div class="player"><div class="now-playing"><button class="now-art" data-action="now-playing" aria-label="Show current collection"><img id="player-art" src="${artwork('night')}" alt="Current track artwork"/></button><div class="now-meta"><strong id="player-title">Your next favorite awaits</strong><span id="player-artist">Pick a track. Find your flow.</span></div><button id="player-like" class="icon-button" data-action="like-current" aria-label="Like current song">${icon('heart')}</button></div><div class="transport"><div class="transport-buttons"><button id="shuffle" class="icon-button" data-action="shuffle" aria-label="Shuffle" aria-pressed="false">${icon('shuffle')}</button><button class="icon-button" data-action="previous" aria-label="Previous song">${icon('skip-back')}</button><button id="play-toggle" class="play-toggle" data-action="toggle" aria-label="Play">${icon('play')}</button><button class="icon-button" data-action="next" aria-label="Next song">${icon('skip-forward')}</button><button id="repeat" class="icon-button" data-action="repeat" aria-label="Repeat" aria-pressed="false">${icon('repeat')}</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek position"/><span id="duration">0:00</span></div></div><div class="player-options"><span class="quality">PERSONAL MIX</span><button class="icon-button" data-action="queue" aria-label="Show queue">${icon('list-music')}</button><button class="icon-button" data-action="mute" id="mute" aria-label="Mute">${icon('volume-2')}</button><input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume"/></div></div>
 <nav class="mobile-nav"><button data-view="home">${icon('home')}Home</button><button data-view="search">${icon('search')}Search</button><button data-view="library">${icon('library')}Library</button><button data-action="account">${icon('user')}You</button></nav>
 <dialog id="dialog"><button class="dialog-close icon-button" data-action="close-dialog" aria-label="Close">${icon('x')}</button><div id="dialog-content"></div></dialog><div id="toast" role="status" aria-live="polite"></div><input id="file-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg" multiple hidden/>`;
+
+setupTheme();
 
 function renderSidebar(){
  $('#like-count').textContent=`${library.favorites.length} songs`;
@@ -136,9 +140,29 @@ async function playTrack(id,newQueue,startAt=0){
  }catch(e){if(token!==playbackToken)return;toast(supportedProvider(t.provider)?e.message||'This service could not play the track. Please try another.':e.message?.includes('another device')?e.message:'Could not play this file. Try another track or supported audio format.');updatePlayer();}
  renderQueue();
 }
+async function continueWithSimilar(){
+ if(!current||!user)return;
+ const index=queue.indexOf(current.id);
+ if(index>=0&&index<queue.length-1){step(1);return;}
+ const source=current,token=playbackToken,version=++recommendationVersion,queued=queue.join('|');
+ const valid=()=>user&&current===source&&token===playbackToken&&version===recommendationVersion&&queued===queue.join('|')&&!sleepExpired(sleepTimer);
+ try{
+  let candidates;
+  if(source.provider==='youtube'){
+   toast('Finding a similar song...');
+   const query=(source.artist.replace(/\s*-?\s*Topic$/i,'')+' '+source.title.replace(/\([^)]*\)|\[[^\]]*\]/g,'')+' music').slice(0,120);
+   candidates=(await music.browse('youtube',query)).tracks;
+  }else candidates=allTracks().filter(t=>t.id!==source.id&&(t.artist===source.artist||(source.mood&&t.mood===source.mood)));
+  if(!valid())return;
+  const excluded=new Set([source.id,...queue,...library.history.slice(0,10)]);
+  const next=candidates.find(t=>!excluded.has(t.id));
+  if(!next){toast('No new similar songs found. Choose another song to continue.');return;}
+  registerMusicTracks([next]);queue.push(next.id);await playTrack(next.id);toast('Playing a similar song');
+ }catch(error){if(valid())toast(error.message||'Could not find a similar song. Choose a song to continue.');}
+}
 function step(direction){const idx=nextIndex(queue.indexOf(current?.id),queue.length,direction,shuffle&&direction===1);if(idx>=0)playTrack(queue[idx]);}
 function toggle(){if(!user)return;if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id,undefined,resumePosition);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
-audio.addEventListener('play',()=>{if(checkSleep())return;updatePlayer();saveSession();});audio.addEventListener('pause',()=>{updatePlayer();saveSession();});audio.addEventListener('ended',()=>{if(sleepTimer?.endOfTrack){finishSleep();return;}if(repeat){audio.currentTime=0;audio.play().catch(()=>toast('Tap play to continue.'));}else step(1);});
+audio.addEventListener('play',()=>{if(checkSleep())return;updatePlayer();saveSession();});audio.addEventListener('pause',()=>{++recommendationVersion;updatePlayer();saveSession();});audio.addEventListener('ended',()=>{if(sleepTimer?.endOfTrack){finishSleep();return;}if(repeat){audio.currentTime=0;audio.play().catch(()=>toast('Tap play to continue.'));}else continueWithSimilar();});
 audio.addEventListener('timeupdate',()=>{if(!audio.getAttribute('src'))return;if(audio.duration>0)resumePosition=audio.currentTime;if(Date.now()-lastSessionSave>5000)saveSession();$('#elapsed').textContent=time(audio.currentTime);$('#duration').textContent=time(audio.duration);const percent=audio.duration?audio.currentTime/audio.duration*100:0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',`${percent}%`);});
 audio.addEventListener('error',()=>{if(audio.getAttribute('src'))toast('Audio could not load. Check your connection or import the file again.');});
 $('#seek').addEventListener('input',e=>{if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/100*audio.duration;});
