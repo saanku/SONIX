@@ -7,6 +7,9 @@ try{
  page.on('pageerror',e=>errors.push(e.message));await page.clock.install();
  const {requests}=await mockAccount(page);
  const base=process.env.SONIX_URL||'http://127.0.0.1:5173/';await page.goto(base);
+ await page.locator('#entry-email').fill('first@example.com');await page.locator('#entry-password').fill('test-password-123');
+ await page.route('**/auth/v1/token**',route=>route.fulfill({status:400,json:{code:'email_not_confirmed',msg:'Email not confirmed'}}));
+ await page.locator('#entry-form [type=submit]').click();await page.locator('#confirmation-help').waitFor({state:'visible'});requests.length=0;await page.locator('#entry-email').fill('');
  const resend=page.locator('#resend-confirmation');await resend.click();assert.equal(requests.length,0);
  await page.locator('#entry-email').fill('first@example.com');await resend.click();
  await page.waitForFunction(()=>document.querySelector('#entry-message').textContent.includes('Confirmation requested'));

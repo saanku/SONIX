@@ -267,17 +267,19 @@ async function enterAccount(session){
  openingAccount={id,promise};try{await promise;}finally{if(openingAccount?.promise===promise)openingAccount=null;}
 }
 async function initCloud(){
+ let recovering=new URLSearchParams(location.hash.slice(1)).get("type")==="recovery";
  authScreen.loading();
  try{
   const c=await getClient();if(!c){authScreen.error('Account sign-in is not configured yet. Please try again later.');return;}
   c.auth.onAuthStateChange((event,session)=>{
+   if(event==='PASSWORD_RECOVERY'){recovering=true;authScreen.show('reset');return;}
    if(event==='INITIAL_SESSION')return;
    if(event==='TOKEN_REFRESHED'){if(user?.id===session?.user?.id){user=session.user;updateAccount();}return;}
    if(event==='SIGNED_OUT')setTimeout(()=>leaveAccount(),0);
-   if(event==='SIGNED_IN')setTimeout(()=>enterAccount(session).catch(()=>authScreen.error('Could not open your account. Please try signing in again.')),0);
+   if(event==='SIGNED_IN'&&!recovering)setTimeout(()=>enterAccount(session).catch(()=>authScreen.error('Could not open your account. Please try signing in again.')),0);
   });
   const {data,error}=await c.auth.getSession();if(error)throw error;
-  if(data.session)await enterAccount(data.session);else authScreen.show();
+  if(recovering&&data.session)authScreen.show('reset');else if(data.session)await enterAccount(data.session);else authScreen.show('signin',recovering?'This reset link is invalid or expired. Request a new one using Forgot password.':'');
  }catch{authScreen.error('Could not connect to your account. Check your connection and try signing in.');}
 }
 let [initialView,initialId]=location.hash.slice(1).split('/');if(['discover','audius'].includes(initialView))initialView='music';if(['home','search','library','liked','originals','mix','playlist','music'].includes(initialView)){view=initialView;try{selectedMix=decodeURIComponent(initialId||'');}catch{}}
