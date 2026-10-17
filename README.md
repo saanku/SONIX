@@ -80,3 +80,12 @@ The relative Vite base supports GitHub Pages repository subpaths. Service worker
 `node tests/auth-email-browser.mjs` tests confirmation resending, cooldown, rate-limit errors, and mail-service errors without sending real emails.
 
 No hosting, GitHub repository, or Supabase project is provisioned automatically by the local code. Usage must remain within the chosen providers' free allowances.
+
+
+### Connect across devices
+
+Apply `supabase/connect.sql` in the project SQL editor to enable private, account-scoped Broadcast and Presence. No service-role key belongs in the browser. The UI reports connection failure if authorization is unavailable. This migration must be applied to the hosted project; deploying GitHub Pages alone does not apply it.
+
+Sign into the same account on both devices and keep the app open. Use the Connect icon to choose a receiving device, then choose a song. Play/pause, next/previous, seek and volume are sent to that device; the sender pauses locally. Selecting This device stops the previously selected receiver and returns controls locally. YouTube playback stays visible on the receiver and may require a user gesture there. Imported local files are not transferred. Closed or suspended browsers cannot act as reliable receivers. Presence expires after 20 seconds without a heartbeat; commands expire and time out rather than replaying later.
+
+Validation: `npm test` covers account-isolated transport, targeted commands, acknowledgement errors, stale commands, disconnect and account switches. Production cross-device testing additionally requires the hosted SQL policy and real signed-in sessions.

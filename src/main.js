@@ -1,8 +1,9 @@
 import './style.css';
 import {setupTheme} from './theme';
 import './music.css';
+import {createConnect} from './connect';
 import {createDiscovery} from './discovery';
-import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2 } from 'lucide';
+import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2, Monitor } from 'lucide';
 import { tracks as originals, mixes, artwork } from './catalog';
 import { initialLibrary, safeLibrary, toggleFavorite, nextIndex, mergeLibraries } from './library';
 import { saveAudio, loadAudio } from './storage';
@@ -15,7 +16,7 @@ import { setupFloatingPlayer } from './floating-player';
 import './listening.css';
 import { createAuthScreen } from './auth-screen';
 
-const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2};
+const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2,Monitor};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icon=(name,extra='')=>`<i data-lucide="${name}" ${extra}></i>`;
@@ -55,7 +56,7 @@ $('#app').innerHTML=`
  <div class="sidebar-bottom"><div class="little-wave">▂ ▅ ▃ ▇ ▅ ▂</div><strong>A space that sounds like you.</strong><p>Your music. Your mood. Your rules.</p><button data-action="import">${icon('upload')}Import your music</button></div>
  <button class="account" data-action="account"><span class="avatar">S</span><span id="account-label">Your personal space<small>Made for your ears only</small></span>${icon('chevron-down')}</button>
 </aside>
-<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><div class="top-actions"><button class="icon-button theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode">&#9728;</button><button class="icon-button" data-action="queue" aria-label="Open queue" title="Queue">${icon('list-music')}</button><button class="sleep-button" data-action="sleep" aria-label="Sleep timer" title="Sleep timer"><span aria-hidden="true">&#9687;</span><span id="sleep-label">Sleep</span></button><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>sanku inte lokham<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
+<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><div class="top-actions"><button class="icon-button" data-action="connect" aria-label="Connect to a device" title="Connect to a device">${icon('monitor')}</button><button class="icon-button theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode">&#9728;</button><button class="icon-button" data-action="queue" aria-label="Open queue" title="Queue">${icon('list-music')}</button><button class="sleep-button" data-action="sleep" aria-label="Sleep timer" title="Sleep timer"><span aria-hidden="true">&#9687;</span><span id="sleep-label">Sleep</span></button><button class="install-button" data-action="install">${icon('download')}<span>Install app</span></button><button class="avatar" data-action="account" aria-label="Your account">S</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>sanku inte lokham<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
 <section id="youtube-panel" hidden aria-label="YouTube video player"><div class="video-toolbar"><button id="video-drag" aria-label="Move video player" title="Drag to move, or use arrow keys">&#10303; <span>YouTube &middot; drag to move</span></button><button class="icon-button" data-action="reset-video" aria-label="Reset video position" title="Reset position">&#8600;</button><button class="icon-button" data-action="close-video" aria-label="Pause and hide video" title="Pause and hide video">${icon('x')}</button></div><div class="video-frame"><div id="youtube-player"></div></div></section>
 <aside id="queue-panel" class="queue-panel" hidden></aside>
 <div class="player"><div class="now-playing"><button class="now-art" data-action="now-playing" aria-label="Show current collection"><img id="player-art" src="${artwork('night')}" alt="Current track artwork"/></button><div class="now-meta"><strong id="player-title">Your next favorite awaits</strong><span id="player-artist">Pick a track. Find your flow.</span></div><button id="player-like" class="icon-button" data-action="like-current" aria-label="Like current song">${icon('heart')}</button></div><div class="transport"><div class="transport-buttons"><button id="shuffle" class="icon-button" data-action="shuffle" aria-label="Shuffle" aria-pressed="false">${icon('shuffle')}</button><button class="icon-button" data-action="previous" aria-label="Previous song">${icon('skip-back')}</button><button id="play-toggle" class="play-toggle" data-action="toggle" aria-label="Play">${icon('play')}</button><button class="icon-button" data-action="next" aria-label="Next song">${icon('skip-forward')}</button><button id="repeat" class="icon-button" data-action="repeat" aria-label="Repeat" aria-pressed="false">${icon('repeat')}</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek position"/><span id="duration">0:00</span></div></div><div class="player-options"><span class="quality">PERSONAL MIX</span><button class="icon-button" data-action="queue" aria-label="Show queue">${icon('list-music')}</button><button class="icon-button" data-action="mute" id="mute" aria-label="Mute">${icon('volume-2')}</button><input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume"/></div></div>
@@ -64,6 +65,33 @@ $('#app').innerHTML=`
 
 setupTheme();
 
+let connectState={devices:[],status:'offline',target:null};
+const connect=createConnect({getClient,name:(/Android|iPhone|iPad/i.test(navigator.userAgent)?'Phone / tablet':'Computer')+' ? '+(/Edg/.test(navigator.userAgent)?'Edge':/Firefox/.test(navigator.userAgent)?'Firefox':/Chrome/.test(navigator.userAgent)?'Chrome':'Safari'),
+ getState:()=>({title:current?.title||'',artist:current?.artist||'',artwork:current?.artwork||'',duration:Number.isFinite(audio.duration)?audio.duration:0,paused:audio.paused,position:Math.floor(audio.currentTime||0)}),
+ onError:toast,onChange:state=>{connectState=state;document.querySelectorAll('[data-action="connect"]').forEach(b=>{b.classList.toggle('active',Boolean(state.target));b.title=state.target?'Controlling '+(state.devices.find(d=>d.id===state.target)?.name||'device'):'Connect to a device';});if($('#dialog').open&&$('#connect-devices'))renderConnect();updatePlayer();},
+ onCommand:async command=>{
+  if(!user||!command||typeof command.type!=='string')throw Error('Invalid playback command.');
+  if(command.type==='play'){
+   const tracks=(Array.isArray(command.tracks)?command.tracks:[]).slice(0,100).map(t=>{
+    if(t?.provider==='youtube'&&/^[\w-]{11}$/.test(t.youtubeId||'')&&t.id==='youtube:'+t.youtubeId)return {id:t.id,youtubeId:t.youtubeId,provider:'youtube',source:'YouTube',title:String(t.title||'YouTube song').slice(0,200),artist:String(t.artist||'YouTube').slice(0,100),artwork:safeWebUrl(t.artwork),permalink:'https://www.youtube.com/watch?v='+t.youtubeId,duration:0};
+    return originals.find(original=>original.id===t?.id);
+   }).filter(Boolean);
+   if(!tracks.some(t=>t.id===command.id))throw Error('This song is unavailable on this device.');
+   registerMusicTracks(tracks);await playTrack(command.id,tracks.map(t=>t.id));
+  }else if(command.type==='toggle')toggle();
+  else if(command.type==='next')step(1);
+  else if(command.type==='previous')step(-1);
+  else if(command.type==='pause')audio.pause();
+  else if(command.type==='volume'&&Number.isFinite(command.value)){audio.volume=Math.max(0,Math.min(1,command.value));$('#volume').value=audio.volume;}
+  else if(command.type==='seek'&&Number.isFinite(command.value)&&Number.isFinite(audio.duration))audio.currentTime=Math.max(0,Math.min(1,command.value))*audio.duration;
+  else throw Error('Unsupported playback command.');
+ }});
+for(const event of ['play','pause','ended'])audio.addEventListener(event,()=>connect.publish());
+async function remoteCommand(command){try{await connect.send(command);return true;}catch(error){toast(error.message);return false;}}
+function renderConnect(){
+ const remote=connectState.devices.find(d=>d.id===connectState.target);
+ $('#dialog-content').innerHTML=`<div id="connect-devices"><span class="eyebrow">YOUR MUSIC, YOUR DEVICES</span><h2>Connect</h2><p>${connectState.status==='online'?'Choose where your music plays.':connectState.status==='unavailable'?'Device connection is unavailable. Supabase Connect setup or a network check is needed.':'Connecting to your account?'}</p><div class="dialog-playlists"><button class="secondary" data-connect-device="">This device ${connectState.target?'':' ? Selected'}</button>${connectState.devices.filter(d=>d.id!==connectState.id).map(d=>`<button class="secondary" data-connect-device="${esc(d.id)}">${esc(d.name)}${d.id===connectState.target?' ? Connected':''}<small>${esc(d.title||'Ready to play')}${d.title?(d.paused?' ? Paused':' ? Playing'):''}</small></button>`).join('')}</div>${connectState.status==='online'&&connectState.devices.length<2?'<p>No other devices online. Open this app and sign into the same account on your other device.</p>':''}${remote?`<p>Playing on ${esc(remote.name)}: ${esc(remote.title||'Choose a song')}</p><div class="dialog-playlists"><button class="secondary" data-action="previous">Previous</button><button class="primary" data-action="toggle">${remote.paused?'Play':'Pause'}</button><button class="secondary" data-action="next">Next</button></div>`:''}<p class="muted">Keep the app open on the receiving device. Its browser may need a tap on Play first. Imported files stay on their original device.</p></div>`;
+}
 const discovery=createDiscovery({music,registerMusicTracks,playTrack,esc,artwork,active:()=>Boolean(user)&&['home','music'].includes(view)});
 
 function renderSidebar(){
@@ -123,6 +151,15 @@ async function loadMusic(q='',page=0,sort=musicState.sort||'popular'){
 function navigate(next,id){view=next;selectedMix=id||null;const hash=`#${next}${id?'/'+encodeURIComponent(id):''}`;if(location.hash!==hash)location.hash=hash;render();window.scrollTo({top:0,behavior:'instant'});}
 window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1).split('/');view=['discover','audius'].includes(next)?'music':['home','search','library','liked','originals','mix','playlist','music'].includes(next)?next:'home';try{selectedMix=id?decodeURIComponent(id):null;}catch{selectedMix=null;}render();});
 function updatePlayer(){
+ const remote=connectState.devices.find(d=>d.id===connectState.target);
+ $('#player-like').disabled=Boolean(remote);$('#shuffle').disabled=Boolean(remote);$('#repeat').disabled=Boolean(remote);
+ if(remote){
+  $('#player-title').textContent=remote.title||'Choose a song';$('#player-artist').textContent='On '+remote.name;
+  $('#player-art').src=safeWebUrl(remote.artwork)||artwork('night');
+  $('#play-toggle').innerHTML=icon(remote.paused?'play':'pause');$('#play-toggle').setAttribute('aria-label',remote.paused?'Play':'Pause');
+  $('#elapsed').textContent=time(remote.position);$('#duration').textContent=time(remote.duration);
+  const percent=remote.duration?Math.min(100,remote.position/remote.duration*100):0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',percent+'%');refreshIcons();return;
+ }
  $('#play-toggle').innerHTML=icon(audio.paused?'play':'pause');$('#play-toggle').setAttribute('aria-label',audio.paused?'Play':'Pause');
  if(!current){$('#player-title').textContent='Your next favorite awaits';$('#player-artist').textContent='Pick a track. Find your flow.';$('#player-art').src=artwork('night');$('#player-like').classList.remove('active');$('#elapsed').textContent='0:00';$('#duration').textContent='0:00';$('#seek').value=0;$('#seek').style.setProperty('--fill','0%');}
  if(current){$('#player-title').textContent=current.title;$('#player-artist').innerHTML=esc(current.artist)+(supportedProvider(current.provider)?` · <a href="${esc(safeWebUrl(current.permalink))}" target="_blank" rel="noopener noreferrer">${esc(providerName(current.provider))} ↗</a>${safeWebUrl(current.license)?` | <a href="${esc(safeWebUrl(current.license))}" target="_blank" rel="noopener noreferrer">License</a>`:''}`:'');$('#player-art').src=current.artwork||artwork('flower');$('#player-like').classList.toggle('active',library.favorites.includes(current.id));}
@@ -133,6 +170,12 @@ function updatePlayer(){
 }
 async function playTrack(id,newQueue,startAt=0){
  if(!user)return;
+ if(connect.target){
+  const track=trackById(id);if(!track||track.local){toast('Imported files can only play on the device that has them.');return;}
+  const tracks=[...new Set([...(newQueue||queue),id])].map(trackById).filter(t=>t&&!t.local).slice(0,100);
+  if(!tracks.some(t=>t.id===id))tracks[tracks.length-1]=track;
+  audio.pause();if(await remoteCommand({type:'play',id,tracks}))toast('Song sent to your connected device');return;
+ }
  const t=trackById(id);if(!t)return;saveSession();const token=++playbackToken;
  if(newQueue)queue=[...new Set(newQueue)].filter(trackById);if(!queue.includes(id))queue.push(id);
  audio.pause();audio.removeAttribute('src');audio.load();if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
@@ -166,13 +209,13 @@ async function continueWithSimilar(){
   registerMusicTracks([next]);queue.push(next.id);await playTrack(next.id);toast('Playing a similar song');
  }catch(error){if(valid())toast(error.message||'Could not find a similar song. Choose a song to continue.');}
 }
-function step(direction){const idx=nextIndex(queue.indexOf(current?.id),queue.length,direction,shuffle&&direction===1);if(idx>=0)playTrack(queue[idx]);}
-function toggle(){if(!user)return;if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id,undefined,resumePosition);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
+function step(direction){if(connect.target){remoteCommand({type:direction===1?'next':'previous'});return;}const idx=nextIndex(queue.indexOf(current?.id),queue.length,direction,shuffle&&direction===1);if(idx>=0)playTrack(queue[idx]);}
+function toggle(){if(!user)return;if(connect.target){remoteCommand({type:'toggle'});return;}if(!current)playTrack(queue[0]||originals[0].id);else if(audio.paused&&!audio.getAttribute('src'))playTrack(current.id,undefined,resumePosition);else if(audio.paused)audio.play().catch(()=>toast('Playback unavailable. Select a track to try again.'));else audio.pause();}
 audio.addEventListener('play',()=>{if(checkSleep())return;updatePlayer();saveSession();});audio.addEventListener('pause',()=>{++recommendationVersion;updatePlayer();saveSession();});audio.addEventListener('ended',()=>{if(sleepTimer?.endOfTrack){finishSleep();return;}if(repeat){audio.currentTime=0;audio.play().catch(()=>toast('Tap play to continue.'));}else continueWithSimilar();});
-audio.addEventListener('timeupdate',()=>{if(!audio.getAttribute('src'))return;if(audio.duration>0)resumePosition=audio.currentTime;if(Date.now()-lastSessionSave>5000)saveSession();$('#elapsed').textContent=time(audio.currentTime);$('#duration').textContent=time(audio.duration);const percent=audio.duration?audio.currentTime/audio.duration*100:0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',`${percent}%`);});
+audio.addEventListener('timeupdate',()=>{if(connect.target||!audio.getAttribute('src'))return;if(audio.duration>0)resumePosition=audio.currentTime;if(Date.now()-lastSessionSave>5000)saveSession();$('#elapsed').textContent=time(audio.currentTime);$('#duration').textContent=time(audio.duration);const percent=audio.duration?audio.currentTime/audio.duration*100:0;$('#seek').value=percent;$('#seek').style.setProperty('--fill',`${percent}%`);});
 audio.addEventListener('error',()=>{if(audio.getAttribute('src'))toast('Audio could not load. Check your connection or import the file again.');});
-$('#seek').addEventListener('input',e=>{if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/100*audio.duration;});
-$('#volume').addEventListener('input',e=>{audio.volume=Number(e.target.value);audio.muted=false;$('#mute').innerHTML=icon(audio.volume?'volume-2':'volume-x');refreshIcons();saveSession();});
+$('#seek').addEventListener('input',e=>{if(connect.target){remoteCommand({type:'seek',value:Number(e.target.value)/100});return;}if(Number.isFinite(audio.duration))audio.currentTime=Number(e.target.value)/100*audio.duration;});
+$('#volume').addEventListener('input',e=>{if(connect.target){remoteCommand({type:'volume',value:Number(e.target.value)});return;}audio.volume=Number(e.target.value);audio.muted=false;$('#mute').innerHTML=icon(audio.volume?'volume-2':'volume-x');refreshIcons();saveSession();});
 function renderQueue(){
  const panel=$('#queue-panel');if(panel.hidden)return;
  panel.innerHTML=`<div class="section-heading"><h2>Your queue</h2><button class="icon-button" data-action="queue" aria-label="Close queue">${icon('x')}</button></div><p class="muted">Drag songs to reorder, or use the arrow buttons.</p><button class="text-button" data-action="clear-queue" ${queue.length<2?'disabled':''}>Clear other songs</button><div class="queue-list">${queue.map(trackById).filter(Boolean).map((t,i)=>`<div class="queue-item ${current?.id===t.id?'active':''}" data-queue-index="${i}" draggable="true"><button class="queue-track" data-track="${esc(t.id)}"><img src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${current?.id===t.id?'Now playing &middot; ':''}${esc(t.artist)}</small></span></button><div class="queue-item-actions"><button data-move-queue="${i}" data-direction="-1" aria-label="Move ${esc(t.title)} up" ${i===0?'disabled':''}>&uarr;</button><button data-move-queue="${i}" data-direction="1" aria-label="Move ${esc(t.title)} down" ${i===queue.length-1?'disabled':''}>&darr;</button><button data-remove-queue="${esc(t.id)}" aria-label="Remove ${esc(t.title)} from queue" ${current?.id===t.id?'disabled':''}>${icon('x')}</button></div></div>`).join('')}</div>`;
@@ -201,7 +244,10 @@ document.addEventListener('click',async e=>{
  if(b.dataset.moveQueue!==undefined){const from=Number(b.dataset.moveQueue);queue=moveQueue(queue,from,from+Number(b.dataset.direction));saveSession();renderQueue();return;}
  if(b.dataset.removeQueue){if(b.dataset.removeQueue!==current?.id)queue=queue.filter(id=>id!==b.dataset.removeQueue);saveSession();renderQueue();return;}
  if(b.dataset.sleepMinutes){setSleep({deadline:Date.now()+Number(b.dataset.sleepMinutes)*60000});return;}
+ if(b.hasAttribute('data-connect-device')){try{const previous=connect.target;if(previous&&previous!==b.dataset.connectDevice)await remoteCommand({type:'pause'});connect.select(b.dataset.connectDevice);if(connect.target)audio.pause();renderConnect();}catch(error){toast(error.message);}return;}
  const a=b.dataset.action;
+ if(a==='connect'){openDialog('<div id="connect-devices"></div>');renderConnect();}
+
  if(a==='continue')toggle();
  if(a==='sleep')sleepDialog();
  if(a==='sleep-end')setSleep({endOfTrack:true});
@@ -272,6 +318,7 @@ async function syncAccount(){
 }
 function listeningKey(name){return user?`sonix-${name}-${user.id}`:`sonix-${name}`;}
 function leaveAccount(message='Sign in to return to your music.'){
+ connect.stop();
  ++authVersion;openingAccount=null;clearTimeout(cloudTimer);saveSession();
  if(user){try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));}catch{}}
  audio.pause();++playbackToken;audio.removeAttribute('src');current=null;queue=originals.map(t=>t.id);resumePosition=0;sleepTimer=null;
@@ -291,7 +338,7 @@ async function enterAccount(session){
   let warning='';
   try{await syncAccount();}catch(error){warning=cloudMessage(error);}
   if(version!==authVersion||user?.id!==id)return;
-  restoreListening();updateAccount();renderSidebar();render();updateSleepLabel();authScreen.hide();
+  restoreListening();connect.start(id);updateAccount();renderSidebar();render();updateSleepLabel();authScreen.hide();
   if(warning)toast(warning);$('#main').focus({preventScroll:true});
  })();
  openingAccount={id,promise};try{await promise;}finally{if(openingAccount?.promise===promise)openingAccount=null;}
