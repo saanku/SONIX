@@ -349,4 +349,12 @@ $('#queue-panel').addEventListener('drop',e=>{const row=e.target.closest('[data-
 $('#queue-panel').addEventListener('dragend',()=>{draggedQueue=null;});
 const floatingPlayer=setupFloatingPlayer($('#youtube-panel'),$('#video-drag'));
 renderSidebar();render();initCloud();updateSleepLabel();
-if('serviceWorker' in navigator&&import.meta.env.PROD)window.addEventListener('load',()=>navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>{}));
+if('serviceWorker' in navigator&&import.meta.env.PROD){
+ let reloading=false;const wasControlled=Boolean(navigator.serviceWorker.controller);
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(wasControlled&&!reloading){reloading=true;saveSession();location.reload();}});
+ window.addEventListener('load',async()=>{
+  try{const registration=await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`,{updateViaCache:'none'});await registration.update();
+   document.addEventListener('visibilitychange',()=>{if(!document.hidden)registration.update().catch(()=>{});});
+  }catch{}
+ });
+}
