@@ -10,3 +10,6 @@
 @media(max-width:700px) { #youtube-panel { right:10px; bottom:155px; width:calc(100vw - 20px); height:220px; } }
 
 .topbar .top-actions{margin-left:auto}
+
+.sidebar-search{padding:10px 8px 16px;min-width:0}.sidebar-search label{font-size:11px;color:var(--muted);display:block;margin-bottom:8px}.sidebar-search>div{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}.sidebar-search input{width:0;min-width:0;flex:1;background:transparent;color:inherit;border:0;padding:10px;font-size:12px}.main-nav .sidebar-search button{padding:8px;width:36px;flex-shrink:0;margin:0}.music-section .mobile-search-form{display:none}.brand-name{white-space:normal;line-height:1.3;font-size:19px;letter-spacing:-.5px}.brand{gap:9px}.auth-brand .brand-name{font-size:25px;max-width:230px}.auth-brand{flex-wrap:wrap}.page-footer>span:first-child{font-size:17px}
+@media(max-width:680px){.music-section .mobile-search-form{display:flex}.auth-brand .brand-name{font-size:21px;max-width:190px}}
