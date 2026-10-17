@@ -91,8 +91,9 @@ for(const event of ['play','pause','ended'])audio.addEventListener(event,()=>con
 async function remoteCommand(command){try{await connect.send(command);return true;}catch(error){toast(error.message);return false;}}
 function renderConnect(){
  const remote=connectState.devices.find(d=>d.id===connectState.target);
- $('#dialog-content').innerHTML=`<div id="connect-devices"><span class="eyebrow">YOUR MUSIC, YOUR DEVICES</span><h2>Connect</h2><p>${connectState.status==='online'?'Choose where your music plays.':connectState.status==='unavailable'?'Device connection is unavailable. Supabase Connect setup or a network check is needed.':'Connecting to your account?'}</p><div class="dialog-playlists"><button class="secondary" data-connect-device="">This device ${connectState.target?'':' ? Selected'}</button>${connectState.devices.filter(d=>d.id!==connectState.id).map(d=>`<button class="secondary" data-connect-device="${esc(d.id)}">${esc(d.name)}${d.id===connectState.target?' ? Connected':''}<small>${esc(d.title||'Ready to play')}${d.title?(d.paused?' ? Paused':' ? Playing'):''}</small></button>`).join('')}</div>${connectState.status==='online'&&connectState.devices.length<2?'<p>No other devices online. Open this app and sign into the same account on your other device.</p>':''}${remote?`<p>Playing on ${esc(remote.name)}: ${esc(remote.title||'Choose a song')}</p><div class="dialog-playlists"><button class="secondary" data-action="previous">Previous</button><button class="primary" data-action="toggle">${remote.paused?'Play':'Pause'}</button><button class="secondary" data-action="next">Next</button></div>`:''}<p class="muted">Keep the app open on the receiving device. Its browser may need a tap on Play first. Imported files stay on their original device.</p></div>`;
+ $('#dialog-content').innerHTML=`<div id="connect-devices"><span class="eyebrow">LISTEN ON</span><h2>Connect to a device</h2><p>${connectState.status==='online'?'Select a device. Every song you choose will play there.':connectState.status==='unavailable'?'Device connection is unavailable. Check your connection and try again.':'Finding your devices...'}</p><div class="dialog-playlists"><button class="secondary" data-connect-device="" aria-pressed="${!connectState.target}">This device<small>${connectState.target?'Play here instead':'Selected output'}</small></button>${connectState.devices.filter(d=>d.id!==connectState.id).map(d=>`<button class="secondary ${d.id===connectState.target?'selected-output':''}" data-connect-device="${esc(d.id)}" aria-pressed="${d.id===connectState.target}">${esc(d.name)}<small>${d.id===connectState.target?'Selected output': 'Available'}${d.title?' ? '+esc(d.title):''}</small></button>`).join('')}</div>${connectState.status==='online'&&connectState.devices.length<2?'<p>No other devices online. Open this app and sign into the same account on your other device.</p>':''}${remote?`<p class="connect-output">Connected to ${esc(remote.name)}. Choose a song anywhere in the app to play it there.</p>`:''}<p class="muted">Keep the app open on the receiving device. Its browser may need a tap on Play first. Imported files stay on their original device.</p></div>`;
 }
+
 const discovery=createDiscovery({music,registerMusicTracks,playTrack,esc,artwork,active:()=>Boolean(user)&&['home','music'].includes(view)});
 
 function renderSidebar(){
@@ -155,7 +156,7 @@ function updatePlayer(){
  const remote=connectState.devices.find(d=>d.id===connectState.target);
  $('#player-like').disabled=Boolean(remote);$('#shuffle').disabled=Boolean(remote);$('#repeat').disabled=Boolean(remote);
  if(remote){
-  $('#player-title').textContent=remote.title||'Choose a song';$('#player-artist').textContent='On '+remote.name;
+  $('#player-title').textContent=remote.title||'Choose a song to play there';$('#player-artist').textContent='Connected to '+remote.name;
   $('#player-art').src=safeWebUrl(remote.artwork)||artwork('night');
   $('#play-toggle').innerHTML=icon(remote.paused?'play':'pause');$('#play-toggle').setAttribute('aria-label',remote.paused?'Play':'Pause');
   $('#elapsed').textContent=time(remote.position);$('#duration').textContent=time(remote.duration);
@@ -245,7 +246,7 @@ document.addEventListener('click',async e=>{
  if(b.dataset.moveQueue!==undefined){const from=Number(b.dataset.moveQueue);queue=moveQueue(queue,from,from+Number(b.dataset.direction));saveSession();renderQueue();return;}
  if(b.dataset.removeQueue){if(b.dataset.removeQueue!==current?.id)queue=queue.filter(id=>id!==b.dataset.removeQueue);saveSession();renderQueue();return;}
  if(b.dataset.sleepMinutes){setSleep({deadline:Date.now()+Number(b.dataset.sleepMinutes)*60000});return;}
- if(b.hasAttribute('data-connect-device')){try{const previous=connect.target;if(previous&&previous!==b.dataset.connectDevice)await remoteCommand({type:'pause'});connect.select(b.dataset.connectDevice);if(connect.target)audio.pause();renderConnect();}catch(error){toast(error.message);}return;}
+ if(b.hasAttribute('data-connect-device')){try{const previous=connect.target;if(previous&&previous!==b.dataset.connectDevice)await remoteCommand({type:'pause'});connect.select(b.dataset.connectDevice);if(connect.target)audio.pause();$('#dialog').close();toast(connect.target?'Connected. Choose a song to play on '+(connectState.devices.find(d=>d.id===connect.target)?.name||'your device'):'Songs will now play on this device');}catch(error){toast(error.message);}return;}
  const a=b.dataset.action;
  if(a==='connect'){openDialog('<div id="connect-devices"></div>');renderConnect();}
 

@@ -29,8 +29,9 @@ test('Connect isolates accounts, discovers devices and acknowledges targeted pla
   assert.equal(phoneState.devices.length,2);assert.throws(()=>phone.select('stranger'));
   phone.select('pc');await phone.send({type:'play',id:'youtube:abcdefghijk'});
   assert.equal(commands.length,1);assert.equal(otherCommands.length,0);
+  assert.equal(phone.target,'pc');await phone.send({type:'play',id:'youtube:lmnopqrstuv'});assert.equal(commands[1].id,'youtube:lmnopqrstuv');assert.equal(phone.target,'pc');
   const receiver=channels.find(c=>c.options.config.presence.key==='pc');
-  await receiver.handlers.command({payload:{to:'pc',from:'phone',request:'expired',sent:Date.now()-60000,command:{type:'next'}}});assert.equal(commands.length,1);
+  await receiver.handlers.command({payload:{to:'pc',from:'phone',request:'expired',sent:Date.now()-60000,command:{type:'next'}}});assert.equal(commands.length,2);
   pc.stop();assert.equal(phone.target,null);assert.equal(phoneState.devices.length,1);
   await phone.start('account-b');await new Promise(r=>setImmediate(r));assert.ok(phoneState.devices.some(d=>d.id==='stranger'));
  }finally{phone.stop();pc.stop();stranger.stop();}
