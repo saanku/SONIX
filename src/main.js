@@ -20,6 +20,7 @@ import { setupFloatingPlayer } from './floating-player';
 import './listening.css';
 import { createAuthScreen } from './auth-screen';
 import './design.css';
+import './mobile.css';
 
 const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2,Monitor};
 const $=s=>document.querySelector(s);
@@ -70,6 +71,9 @@ $('#app').innerHTML=`
 <dialog id="dialog"><button class="dialog-close icon-button" data-action="close-dialog" aria-label="Close">${icon('x')}</button><div id="dialog-content"></div></dialog><div id="toast" role="status" aria-live="polite"></div><input id="file-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg" multiple hidden/>`;
 
 setupTheme();
+document.querySelector('.topbar').insertAdjacentHTML('afterbegin','<strong class="mobile-page-title">Your music</strong>');
+document.querySelector('.top-actions').insertAdjacentHTML('beforeend',`<button class="icon-button mobile-tools-toggle" data-action="mobile-tools" aria-label="More player options">${icon('more-horizontal')}</button>`);
+document.querySelector('.transport-buttons').insertAdjacentHTML('beforeend',`<button class="icon-button mobile-player-lyrics" data-action="mobile-lyrics" aria-label="Show lyrics">${icon('music-2')}</button>`);
 for(const container of [document.querySelector('.top-actions'),document.querySelector('.player-options')]){
  const button=document.createElement('button');button.className='icon-button lyrics-toggle';button.dataset.action='lyrics';button.setAttribute('aria-label','Show lyrics');button.setAttribute('aria-pressed','false');button.title='Lyrics';button.textContent='♫';container.prepend(button);
 }
@@ -145,8 +149,11 @@ function sectionHead(eyebrow,title,action='',label='View all'){return `<div clas
 function mixCard(m){return `<button class="mix-card" data-mix="${m.id}"><div class="mix-art"><img loading="lazy" src="${artwork(m.art)}" alt="${esc(m.name)} cover"/><div class="cover-brand">sanku inte lokham / SELECTS</div><span class="cover-tag">${m.tag}</span><strong style="color:${m.color}">${esc(m.name)}</strong><span class="card-play">${icon('play')}</span></div><h3>${m.name}</h3><p>${m.sub}</p></button>`;}
 function trackRows(list){return list.length?`<div class="track-table"><div class="track-table-head"><span>#</span><span>TITLE</span><span>ALBUM</span><span>TIME</span><span></span></div>${list.map((t,i)=>`<div class="track-row ${current?.id===t.id?'is-current':''}"><button class="track-number" data-track="${esc(t.id)}" aria-label="Play ${esc(t.title)}"><span>${current?.id===t.id?'♫':String(i+1).padStart(2,'0')}</span>${icon('play')}</button><button class="track-info" data-track="${esc(t.id)}"><img loading="lazy" src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span></button><span class="track-album">${esc(t.album||'Your uploads')}</span><span class="track-duration">${time(t.duration)}</span><div class="track-actions"><button class="icon-button track-menu" data-queue-menu="${esc(t.id)}" aria-label="Queue options for ${esc(t.title)}">${icon('more-horizontal')}</button><button class="icon-button ${library.favorites.includes(t.id)?'active':''}" data-like="${esc(t.id)}" aria-label="${library.favorites.includes(t.id)?'Unlike':'Like'} ${esc(t.title)}">${icon('heart')}</button><button class="icon-button" data-add="${esc(t.id)}" aria-label="Add ${esc(t.title)} to playlist">${icon('plus')}</button></div></div>`).join('')}</div>`:`<div class="empty-state">${icon('headphones')}<h3>Your soundtrack starts here</h3><p>Import your music or explore sanku inte lokham Originals to add songs.</p><button class="primary" data-action="import">${icon('upload')}Import music</button></div>`;}
 function render(){
+ document.querySelector('.mobile-page-title').textContent=({home:'Your music',search:'Search',library:'Your library',liked:'Liked songs',music:'Discover',originals:'Originals',mix:'Made for you',playlist:'Your playlist'})[view]||'Your music';
+ document.querySelectorAll('.mobile-nav [data-view]').forEach(button=>{if(button.dataset.view===view)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
  const keepSearchFocus=document.activeElement?.matches('#music-form input');
  const main=$('#main');
+ main.dataset.view=view;
  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('selected',b.dataset.view===view));
  if(view==='home'){
  const visible=activeFilter==='All'?mixes:mixes.filter(m=>m.tracks.some(id=>trackById(id)?.mood===activeFilter));
@@ -290,6 +297,7 @@ function accountDialog(){
 
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button,[data-view]');if(!b)return;
+ if(b.closest('.mobile-tools'))$('#dialog').close();
  if(b.dataset.view){navigate(b.dataset.view);return;}
  if(b.dataset.mix){navigate('mix',b.dataset.mix);return;}if(b.dataset.playlist){navigate('playlist',b.dataset.playlist);return;}
  if(b.dataset.musicTrack){playTrack(b.dataset.musicTrack,musicState.tracks.map(t=>t.id));return;}
@@ -298,13 +306,15 @@ document.addEventListener('click',async e=>{
  if(b.dataset.add){rememberMusic(b.dataset.add);persist();playlistDialog(b.dataset.add);return;}
  if(b.dataset.filter){activeFilter=b.dataset.filter;render();return;}
  if(b.dataset.saveTrack){const p=library.playlists.find(p=>p.id===b.dataset.target);if(p&&!p.tracks.includes(b.dataset.saveTrack))p.tracks.push(b.dataset.saveTrack);persist();$('#dialog').close();toast('Added to your playlist');if(view==='playlist')render();return;}
- if(b.dataset.queueMenu){const t=trackById(b.dataset.queueMenu);if(t)openDialog(`<h2>Queue options</h2><p>${esc(t.title)}</p><div class="dialog-playlists"><button class="secondary" data-enqueue="${esc(t.id)}" data-next="true">Play next</button><button class="secondary" data-enqueue="${esc(t.id)}">Add to queue</button></div>`);return;}
+ if(b.dataset.queueMenu){const t=trackById(b.dataset.queueMenu);if(t)openDialog(`<h2>Song options</h2><p>${esc(t.title)}</p><div class="dialog-playlists"><button class="secondary" data-enqueue="${esc(t.id)}" data-next="true">Play next</button><button class="secondary" data-enqueue="${esc(t.id)}">Add to queue</button><button class="secondary" data-add="${esc(t.id)}">Add to playlist</button></div>`);return;}
  if(b.dataset.enqueue){const id=b.dataset.enqueue;if(connect.target){const t=trackById(id);if(!t||t.local){toast('Imported files cannot be queued on another device.');return;}if(await remoteCommand({type:'enqueue',id,tracks:[t],next:b.dataset.next==='true'}))toast('Added to the connected device queue');}else queueSong(id,b.dataset.next==='true');$('#dialog').close();return;}
  if(b.dataset.moveQueue!==undefined){const from=Number(b.dataset.moveQueue);queue=moveQueue(queue,from,from+Number(b.dataset.direction));saveSession();renderQueue();return;}
  if(b.dataset.removeQueue){manualQueue=manualQueue.filter(id=>id!==b.dataset.removeQueue);if(b.dataset.removeQueue!==current?.id)queue=queue.filter(id=>id!==b.dataset.removeQueue);saveSession();renderQueue();return;}
  if(b.dataset.sleepMinutes){setSleep({deadline:Date.now()+Number(b.dataset.sleepMinutes)*60000});return;}
  if(b.hasAttribute('data-connect-device')){try{const previous=connect.target;if(previous&&previous!==b.dataset.connectDevice)await remoteCommand({type:'pause'});connect.select(b.dataset.connectDevice);if(connect.target)audio.pause();$('#dialog').close();toast(connect.target?'Connected. Choose a song to play on '+(connectState.devices.find(d=>d.id===connect.target)?.name||'your device'):'Songs will now play on this device');}catch(error){toast(error.message);}return;}
  const a=b.dataset.action;
+ if(a==='mobile-tools')openDialog(`<h2>Your listening tools</h2><div class="mobile-tools"><button class="secondary" data-action="queue">${icon('list-music')}Your queue</button><button class="secondary" data-action="mobile-lyrics">${icon('music-2')}Song lyrics</button><button class="secondary" data-action="sleep">${icon('headphones')}Sleep timer</button><button class="secondary" data-action="import">${icon('upload')}Import music</button><button class="secondary" data-view="music">${icon('radio')}Discover songs</button><button class="secondary" data-action="connect-youtube">${icon('globe-2')}Music source settings</button></div>`);
+ if(a==='mobile-lyrics')document.querySelector('.top-actions [data-action="lyrics"]').click();
  if(a==='connect'){openDialog('<div id="connect-devices"></div>');renderConnect();}
 
  if(a==='continue')toggle();
