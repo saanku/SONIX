@@ -1,4 +1,6 @@
 import './style.css';
+import {createLyrics} from './lyrics';
+import './lyrics.css';
 import {setupTheme} from './theme';
 import './music.css';
 import {unheard,similarQuery} from './autoplay';
@@ -67,6 +69,10 @@ $('#app').innerHTML=`
 <dialog id="dialog"><button class="dialog-close icon-button" data-action="close-dialog" aria-label="Close">${icon('x')}</button><div id="dialog-content"></div></dialog><div id="toast" role="status" aria-live="polite"></div><input id="file-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg" multiple hidden/>`;
 
 setupTheme();
+for(const container of [document.querySelector('.top-actions'),document.querySelector('.player-options')]){
+ const button=document.createElement('button');button.className='icon-button lyrics-toggle';button.dataset.action='lyrics';button.setAttribute('aria-label','Show lyrics');button.setAttribute('aria-pressed','false');button.title='Lyrics';button.textContent='♫';container.prepend(button);
+}
+const lyrics=createLyrics({audio,getTrack:()=>current,getPosition:()=>audio.getAttribute('src')?audio.currentTime:resumePosition});
 
 let connectState={devices:[],status:'offline',target:null};
 const connect=createConnect({getClient,name:(/Android|iPhone|iPad/i.test(navigator.userAgent)?'Phone / tablet':'Computer')+' ? '+(/Edg/.test(navigator.userAgent)?'Edge':/Firefox/.test(navigator.userAgent)?'Firefox':/Chrome/.test(navigator.userAgent)?'Chrome':'Safari'),
@@ -155,6 +161,7 @@ async function loadMusic(q='',page=0,sort=musicState.sort||'popular'){
 function navigate(next,id){view=next;selectedMix=id||null;const hash=`#${next}${id?'/'+encodeURIComponent(id):''}`;if(location.hash!==hash)location.hash=hash;render();window.scrollTo({top:0,behavior:'instant'});}
 window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1).split('/');view=['discover','audius'].includes(next)?'music':['home','search','library','liked','originals','mix','playlist','music'].includes(next)?next:'home';try{selectedMix=id?decodeURIComponent(id):null;}catch{selectedMix=null;}render();});
 function updatePlayer(){
+ lyrics.update();
  const remote=connectState.devices.find(d=>d.id===connectState.target);
  $('#player-like').disabled=Boolean(remote);$('#shuffle').disabled=Boolean(remote);$('#repeat').disabled=Boolean(remote);
  if(remote){
@@ -340,6 +347,7 @@ async function syncAccount(){
 }
 function listeningKey(name){return user?`sonix-${name}-${user.id}`:`sonix-${name}`;}
 function leaveAccount(message='Sign in to return to your music.'){
+ lyrics.close();
  connect.stop();manualQueue=[];
  ++authVersion;openingAccount=null;clearTimeout(cloudTimer);saveSession();
  if(user){try{localStorage.setItem(`sonix-library-backup-${user.id}`,JSON.stringify(library));}catch{}}
