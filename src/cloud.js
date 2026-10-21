@@ -1,3 +1,4 @@
+import {patchCloudRecord} from './cloud-record';
 let clientPromise;
 export const configured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 export async function getClient() {
@@ -11,4 +12,5 @@ export function cloudMessage(error) {
   return 'Cloud sync is unavailable. Your library is saved on this device.';
 }
 export async function readCloud(userId) {const c=await getClient();const {data,error}=await c.from('libraries').select('data').eq('user_id',userId).maybeSingle();if(error)throw error;return data?.data;}
-export async function writeCloud(userId, data) {const c=await getClient();const {error}=await c.from('libraries').upsert({user_id:userId,data,updated_at:new Date().toISOString()});if(error)throw error;}
+export async function writeCloud(userId,data){const c=await getClient();return patchCloudRecord(c,userId,existing=>({...data,playback:existing.playback||null}));}
+export async function writePlayback(userId,playback,claim=false){const c=await getClient();return (await patchCloudRecord(c,userId,existing=>!claim&&existing.playback?.owner!==playback.owner?null:{...existing,playback}))?.playback;}

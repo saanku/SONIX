@@ -29,6 +29,8 @@ Press **Space** to play/pause and **/** to focus search. Import audio using the 
 
 ## Listening controls
 
+- **Continue across devices:** sign into the same account on your phone and PC. The latest song, queue, and position are saved to your existing cloud library. Open devices check for updates every five seconds; pausing sends a checkpoint immediately. Press Play on another device to continue there; the previous device pauses when it receives the handoff. Opening the app does not autoplay. Internet access and an open browser are needed for synchronization; mobile background suspension or an abrupt close may leave the last periodic checkpoint. Imported audio must exist on the receiving device. Separate accounts remain independent. No additional database migration is required.
+
 - **Continue listening:** the Home card and Play button restore your last song, position, queue, shuffle, repeat, and volume on this device. Reloading never starts music automatically. Session metadata is saved periodically and when pausing or leaving the page; imported audio must still be available on the same device.
 - **Sleep timer:** use the clock in the top bar. Choose 15, 30, 45, or 60 minutes, a custom 1–180 minutes, or the end of the playing song. Set another timer to replace it, or choose Cancel timer. The deadline survives reloads. Browsers can suspend background tabs, so keep SONIX open for timely stopping; an overdue timer pauses playback when the tab wakes.
 - **Queue:** open it from the top bar or player. Use a song's three-dot menu for Play next or Add to queue. Drag rows to reorder on desktop, or use the up/down buttons on any device. Remove individual songs or clear everything except the current song. Queue selection preserves your edited order.
