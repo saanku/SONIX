@@ -21,6 +21,8 @@ import './listening.css';
 import { createAuthScreen } from './auth-screen';
 import './design.css';
 import './mobile.css';
+import {createNowPlaying} from './now-playing';
+import './now-playing.css';
 
 const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2,Monitor};
 const $=s=>document.querySelector(s);
@@ -201,6 +203,7 @@ async function loadMusic(q='',page=0,sort=musicState.sort||'popular'){
 function navigate(next,id){view=next;selectedMix=id||null;const hash=`#${next}${id?'/'+encodeURIComponent(id):''}`;if(location.hash!==hash)location.hash=hash;render();window.scrollTo({top:0,behavior:'instant'});}
 window.addEventListener('hashchange',()=>{const [next,id]=location.hash.slice(1).split('/');view=['discover','audius'].includes(next)?'music':['home','search','library','liked','originals','mix','playlist','music'].includes(next)?next:'home';try{selectedMix=id?decodeURIComponent(id):null;}catch{selectedMix=null;}render();});
 function updatePlayer(){
+ expandedPlayer.update();
  lyrics.update();
  const remote=connectState.devices.find(d=>d.id===connectState.target);
  $('#player-like').disabled=Boolean(remote);$('#shuffle').disabled=Boolean(remote);$('#repeat').disabled=Boolean(remote);
@@ -334,7 +337,7 @@ document.addEventListener('click',async e=>{
  if(a==='play-view'){const ids=JSON.parse($('#main').dataset.tracks||'[]');if(ids.length)playTrack(ids[0],ids);}
  if(a==='all-mixes'){activeFilter='All';navigate('home');document.querySelector('.mix-grid')?.scrollIntoView({behavior:'smooth',block:'center'});}
  if(a==='originals')navigate('originals');
- if(a==='now-playing'&&current)navigate(supportedProvider(current.provider)?'music':current.local?'library':'originals');
+ if(a==='now-playing')expandedPlayer.open();
  if(a==='back')history.back();if(a==='forward')history.forward();
  if(a==='queue'){$('#queue-panel').hidden=!$('#queue-panel').hidden;renderQueue();}
  if(a==='mute'){audio.muted=!audio.muted;$('#mute').innerHTML=icon(audio.muted?'volume-x':'volume-2');refreshIcons();}
@@ -391,6 +394,7 @@ async function syncAccount(){
 }
 function listeningKey(name){return user?`sonix-${name}-${user.id}`:`sonix-${name}`;}
 function leaveAccount(message='Sign in to return to your music.'){
+ expandedPlayer.close();
  continuity.stop();continuationFrom='';
  lyrics.close();
  connect.stop();manualQueue=[];
@@ -470,6 +474,19 @@ $('#queue-panel').addEventListener('dragover',e=>{if(draggedQueue!==null&&e.targ
 $('#queue-panel').addEventListener('drop',e=>{const row=e.target.closest('[data-queue-index]');if(draggedQueue===null||!row)return;e.preventDefault();queue=moveQueue(queue,draggedQueue,Number(row.dataset.queueIndex));draggedQueue=null;saveSession();renderQueue();});
 $('#queue-panel').addEventListener('dragend',()=>{draggedQueue=null;});
 const floatingPlayer=setupFloatingPlayer($('#youtube-panel'),$('#video-drag'));
+document.querySelector('.video-toolbar').insertAdjacentHTML('beforeend',`<button class="icon-button" data-action="now-playing" aria-label="Expand video player" title="Expand player">${icon('arrow-up-right')}</button>`);
+const expandedPlayer=createNowPlaying({artwork:artwork('flower'),getState:()=>{
+ const remote=connectState.devices.find(d=>d.id===connect.target);
+ return {track:remote?{title:remote.title,artist:remote.artist,artwork:safeWebUrl(remote.artwork)}:current,remote:remote?.name,paused:remote?remote.paused:audio.paused,position:remote?remote.position:audio.getAttribute('src')?audio.currentTime:resumePosition,duration:remote?remote.duration:audio.duration||current?.duration||0,favorite:current&&library.favorites.includes(current.id),shuffle,repeat};
+},seek:value=>{const slider=$('#seek');slider.value=value*100;slider.dispatchEvent(new Event('input',{bubbles:true}));},action:name=>{
+ if(name==='lyrics')document.querySelector('.top-actions [data-action="lyrics"]').click();
+ else document.querySelector(`[data-action="${name}"]`)?.click();
+}});
+audio.addEventListener('timeupdate',()=>expandedPlayer.update());
+const nowMeta=document.querySelector('.now-meta');nowMeta.dataset.action='now-playing';nowMeta.setAttribute('role','button');nowMeta.tabIndex=0;nowMeta.setAttribute('aria-label','Open now playing');
+nowMeta.addEventListener('click',event=>{if(!event.target.closest('a'))expandedPlayer.open();});
+nowMeta.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();expandedPlayer.open();}});
+document.querySelector('.now-art').setAttribute('aria-label','Open now playing');
 renderSidebar();render();initCloud();updateSleepLabel();
 if('serviceWorker' in navigator&&import.meta.env.PROD){
  let reloading=false;const wasControlled=Boolean(navigator.serviceWorker.controller);

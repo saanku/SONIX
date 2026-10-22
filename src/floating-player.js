@@ -9,7 +9,7 @@ export function setupFloatingPlayer(panel,handle) {
     Object.assign(panel.style,{left:left+'px',top:top+'px',right:'auto',bottom:'auto'});
     return {x:left,y:top};
   }
-  function fit(){if(panel.hidden)return;const rect=panel.getBoundingClientRect();saved=place(saved?.x??rect.x,saved?.y??rect.y);}
+  function fit(){if(panel.hidden||panel.classList.contains('is-expanded'))return;const rect=panel.getBoundingClientRect();saved=place(saved?.x??rect.x,saved?.y??rect.y);}
   function persist(){try{localStorage.setItem('sonix-player-position',JSON.stringify(saved));}catch{}}
   handle.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;const rect=panel.getBoundingClientRect();
