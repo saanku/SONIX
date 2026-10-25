@@ -1,0 +1,6 @@
+.native-app .workspace{padding-top:env(safe-area-inset-top,0px)}
+.native-app .auth-story{padding-top:calc(24px + env(safe-area-inset-top,0px))}
+.native-app .install-button{display:none}
+.native-app body{overscroll-behavior-y:none}
+.collection-actions [aria-pressed="true"]{color:var(--green);border-color:currentColor}
+.player-options .quality{min-height:44px;cursor:pointer}

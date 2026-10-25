@@ -1,0 +1,10 @@
+{
+  "appId": "io.github.saanku.sonix",
+  "appName": "SONIX",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "never",
+    "preferredContentMode": "mobile",
+    "backgroundColor": "#11121b"
+  }
+}

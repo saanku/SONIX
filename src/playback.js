@@ -1,3 +1,5 @@
+import {isNative} from './platform';
+import {createIOSYouTubePlayer} from './ios-youtube';
 // Shared transport for local audio and a visible YouTube embed.
 export function createPlayback(onError) {
   const local=new Audio(),events=new EventTarget();
@@ -10,14 +12,15 @@ export function createPlayback(onError) {
     ready=new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>{ready=null;reject(Error('YouTube player could not load. Check your connection and try again.'));},25000);
       const setup=()=>{
-        player=new window.YT.Player('youtube-player',{width:'480',height:'270',playerVars:{playsinline:1,origin:location.origin},events:{
+        const events={
           onReady:()=>{clearTimeout(timer);resolve(player);},
           onStateChange:e=>{if(videoId){if(e.data===1&&document.querySelector('#youtube-panel').hidden){player.pauseVideo();return;}emit('timeupdate');if(e.data===1)emit('play');if(e.data===2)emit('pause');if(e.data===0)emit('ended');}},
           onError:()=>{if(videoId){onError('This video cannot play here. Use its YouTube link or choose another video.');emit('pause');}},
           onAutoplayBlocked:()=>onError('Press Play in the YouTube player to start this video.')
-        }});
+        };
+        player=isNative?createIOSYouTubePlayer(events):new window.YT.Player('youtube-player',{width:'480',height:'270',playerVars:{playsinline:1,controls:1,origin:location.origin},events});
       };
-      if(window.YT?.Player)setup();
+      if(isNative||window.YT?.Player)setup();
       else{window.onYouTubeIframeAPIReady=setup;const script=document.createElement('script');script.src='https://www.youtube.com/iframe_api';script.onerror=()=>{clearTimeout(timer);ready=null;reject(Error('Could not load the YouTube player.'));};document.head.append(script);}
     });
     return ready;

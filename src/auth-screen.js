@@ -1,3 +1,4 @@
+import {accountRedirectURL} from './platform';
 import './auth-screen.css';
 
 export function createAuthScreen({getClient,onSignedIn}) {
@@ -54,7 +55,7 @@ export function createAuthScreen({getClient,onSignedIn}) {
       if(Date.now()<resendAfter)return;
       const field=root.querySelector('#entry-email');field.value=field.value.trim();if(!field.reportValidity()){field.focus();return;}
       setBusy(true,'Requesting confirmation…');notify('');
-      try{const client=await getClient();if(!client)throw Error('Account sign-in is not configured yet. Please try again later.');const {error}=await client.auth.resend({type:'signup',email:field.value,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;resendAfter=Date.now()+60000;notify('Confirmation requested. If this account needs verification, check your inbox and Spam or Junk folder. If nothing arrives, the sanku inte lokham owner needs to check email delivery.');}
+      try{const client=await getClient();if(!client)throw Error('Account sign-in is not configured yet. Please try again later.');const {error}=await client.auth.resend({type:'signup',email:field.value,options:{emailRedirectTo:accountRedirectURL}});if(error)throw error;resendAfter=Date.now()+60000;notify('Confirmation requested. If this account needs verification, check your inbox and Spam or Junk folder. If nothing arrives, the sanku inte lokham owner needs to check email delivery.');}
       catch(error){if(error.status===429||error.code==='over_email_send_rate_limit')resendAfter=Date.now()+60000;notify(authError(error),true);}
       finally{setBusy(false);}return;
     }
@@ -69,7 +70,7 @@ export function createAuthScreen({getClient,onSignedIn}) {
       const client=await getClient();if(!client)throw Error('Account sign-in is not configured yet. Please try again later.');
       if(mode==='forgot'){
         if(Date.now()<resendAfter){notify('Wait a minute before requesting another email.',true);return;}
-        const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+        const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:accountRedirectURL});
         if(error){if(error.status===429)resendAfter=Date.now()+60000;throw error;}
         resendAfter=Date.now()+60000;notify('If an account exists for this email, you will receive a password reset link. Check Spam or Junk too.');return;
       }
@@ -77,7 +78,7 @@ export function createAuthScreen({getClient,onSignedIn}) {
         const {error}=await client.auth.updateUser({password});if(error)throw error;
         form.reset();const {data}=await client.auth.getSession();await onSignedIn(data.session);return;
       }
-      const result=mode==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname,data:{display_name:String(values.get('name')).trim()}}}):await client.auth.signInWithPassword({email,password});
+      const result=mode==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:accountRedirectURL,data:{display_name:String(values.get('name')).trim()}}}):await client.auth.signInWithPassword({email,password});
       if(result.error)throw result.error;
       form.querySelectorAll('input[type="password"]').forEach(input=>input.value='');root.querySelector('#entry-password').value='';
       if(result.data.session){await onSignedIn(result.data.session);}
