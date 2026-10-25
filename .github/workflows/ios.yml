@@ -31,20 +31,26 @@ jobs:
           -configuration Debug -sdk iphonesimulator
           -destination 'generic/platform=iOS Simulator'
           -derivedDataPath ios/DerivedData CODE_SIGNING_ALLOWED=NO build
+      - name: Package simulator app
+        run: ditto -c -k --sequesterRsrc --keepParent ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app ios/SONIX-simulator.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SONIX-iOS-simulator
+          path: ios/SONIX-simulator.zip
+          retention-days: 14
       - name: Launch in iPhone simulator
+        timeout-minutes: 5
         run: |
-          DEVICE=$(xcrun simctl list devices available -j | node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>{const d=Object.values(JSON.parse(s).devices).flat().find(d=>d.name.startsWith('iPhone'));if(!d)process.exit(1);process.stdout.write(d.udid)})")
+          xcrun simctl list devices available
+          DEVICE=$(xcrun simctl list devices available -j | node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>{const d=Object.entries(JSON.parse(s).devices).filter(([k])=>k.includes('iOS')).sort(([a],[b])=>b.localeCompare(a,undefined,{numeric:true})).flatMap(([,v])=>v).find(d=>d.name.startsWith('iPhone'));if(!d)process.exit(1);process.stdout.write(d.udid)})")
           xcrun simctl boot "$DEVICE"
           xcrun simctl bootstatus "$DEVICE" -b
           xcrun simctl install "$DEVICE" ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app
           xcrun simctl launch "$DEVICE" io.github.saanku.sonix
           sleep 15
           xcrun simctl io "$DEVICE" screenshot ios/simulator.png
-          ditto -c -k --sequesterRsrc --keepParent ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app ios/SONIX-simulator.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: SONIX-iOS-simulator
-          path: |
-            ios/SONIX-simulator.zip
-            ios/simulator.png
+          name: SONIX-iOS-screenshot
+          path: ios/simulator.png
           retention-days: 14
