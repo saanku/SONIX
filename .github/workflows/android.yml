@@ -68,17 +68,23 @@ jobs:
           profile: pixel_6
           script: |
             adb install SONIX.apk
+            adb shell input keyevent KEYCODE_WAKEUP
+            adb shell wm dismiss-keyguard
             adb shell am start -W -n io.github.saanku.sonix/.MainActivity
-            sleep 15
+            sleep 30
             adb shell pidof io.github.saanku.sonix
             adb shell uiautomator dump /sdcard/sonix-ui.xml
             adb pull /sdcard/sonix-ui.xml android-ui.xml
-            grep -q 'Welcome back' android-ui.xml
             adb exec-out screencap -p > android-screen.png
+            cat android-ui.xml
+            grep -q 'Welcome back' android-ui.xml
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: SONIX-Android-screen
-          path: android-screen.png
+          path: |
+            android-screen.png
+            android-ui.xml
       - name: Publish Android test download
         env:
           GH_TOKEN: ${{ github.token }}
