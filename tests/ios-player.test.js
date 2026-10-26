@@ -22,6 +22,8 @@ test('iOS player bridge accepts only its parent and channel and limits commands'
   {...command,data:{...command.data,args:'invalid'}}])receive(invalid);
  assert.equal(calls.length,0,'untrusted commands are ignored');
  receive(command);assert.equal(calls.length,1);
+ receive({...command,origin:'https://localhost'});assert.equal(calls.length,2,'Android WebView can control playback');
+ receive({...command,origin:'https://localhost.evil.example'});assert.equal(calls.length,2,'lookalike origins are rejected');
  tick();assert.equal(messages.at(-1).data.id,'abcdefghijk');
  assert.equal(messages.at(-1).data.time,15);
 });

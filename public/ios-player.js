@@ -6,7 +6,7 @@
  const methods=new Set(['setVolume','mute','unMute','seekTo','playVideo','pauseVideo','stopVideo','loadVideoById']);
  addEventListener('message',event=>{
   // Only the containing native WebView can control this particular player.
-  if(event.source!==parent||!['capacitor://localhost','null'].includes(event.origin)||event.data?.channel!==channel||!ready)return;
+  if(event.source!==parent||!['capacitor://localhost','https://localhost','null'].includes(event.origin)||event.data?.channel!==channel||!ready)return;
   const {method,args}=event.data;
   if(!methods.has(method)||!Array.isArray(args)||args.length>2)return;
   player[method](...args);
