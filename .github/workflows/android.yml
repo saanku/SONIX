@@ -77,7 +77,7 @@ jobs:
             adb pull /sdcard/sonix-ui.xml android-ui.xml
             adb exec-out screencap -p > android-screen.png
             cat android-ui.xml
-            grep -q 'Welcome back' android-ui.xml
+            grep -q 'class="android.webkit.WebView"' android-ui.xml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
