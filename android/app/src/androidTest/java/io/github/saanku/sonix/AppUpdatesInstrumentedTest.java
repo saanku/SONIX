@@ -21,7 +21,7 @@ public class AppUpdatesInstrumentedTest {
         Intent launch = new Intent(instrumentation.getTargetContext(), MainActivity.class)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Activity activity = instrumentation.startActivitySync(launch);
-        AppUpdates updates = new AppUpdates(activity);
+        AppUpdates updates = ((MainActivity) activity).updates;
         try {
             instrumentation.runOnMainSync(() -> updates.show(123));
             onView(withText("Update available")).check(matches(isDisplayed()));
