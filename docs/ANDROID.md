@@ -12,6 +12,10 @@ For a local debug APK, run `gradlew.bat assembleDebug` from `android` on Windows
 
 ## Behavior
 
+Install the APK with the update-check feature once to enable automatic update notices. SONIX checks on launch and when returning to the foreground (at most once per minute). A newer published build shows **Update available**, with **Update now** and **Later**. Later dismisses that build until the app process restarts; a newer build can still prompt. Update now opens the exact version's APK in your browser, and Android asks you to confirm installation. Keep the existing app installed to preserve local data. This is not a silent or Google Play update.
+
+The workflow uploads a versioned signed APK after its checks pass, then publishes `update.json` to the `android-test` release. The app compares that build number with its installed Android version code. Failed builds never advertise an update. Offline checks fail quietly and retry on a later foreground transition; account credentials are never sent. The stable `SONIX.apk` link remains available for first installs.
+
 The UI is bundled with the APK. Your account library still syncs with the website; imported audio remains on its importing device. Account confirmation and password reset links open the website, after which you can sign in to the app.
 
 The visible YouTube player uses the existing HTTPS player bridge, with Android's `https://localhost` origin explicitly allowed. It receives no account tokens. Quality uses the YouTube player's own settings. There is no background YouTube audio or ad-blocking implementation.
