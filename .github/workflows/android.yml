@@ -79,7 +79,7 @@ jobs:
             cat android-ui.xml
             grep -q 'class="android.webkit.WebView"' android-ui.xml
             adb uninstall io.github.saanku.sonix
-            cd android && bash gradlew connectedDebugAndroidTest --no-daemon
+            cd android && bash gradlew :app:connectedDebugAndroidTest --no-daemon
       - uses: actions/upload-artifact@v4
         if: always()
         with:
