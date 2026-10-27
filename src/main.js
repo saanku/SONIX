@@ -9,7 +9,7 @@ import './music.css';
 import {unheard,similarQuery} from './autoplay';
 import {createConnect} from './connect';
 import {createDiscovery} from './discovery';
-import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2, Monitor } from 'lucide';
+import { createIcons, Home, Search, Library, Heart, Plus, ArrowUpRight, ArrowLeft, ArrowRight, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, ListMusic, X, Check, Music2, Upload, Headphones, ChevronDown, MoreHorizontal, Download, Globe2, User, LogOut, Disc3, Radio, CheckCircle2, Monitor, LayoutGrid } from 'lucide';
 import { tracks as originals, mixes, artwork } from './catalog';
 import { initialLibrary, safeLibrary, toggleFavorite, nextIndex, mergeLibraries } from './library';
 import { saveAudio, loadAudio } from './storage';
@@ -25,14 +25,17 @@ import './design.css';
 import './mobile.css';
 import {createNowPlaying} from './now-playing';
 import './now-playing.css';
+import {createCleanViews} from './clean-views';
+import './clean-ui.css';
 
-const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2,Monitor};
+const icons={Home,Search,Library,Heart,Plus,ArrowUpRight,ArrowLeft,ArrowRight,Play,Pause,SkipBack,SkipForward,Shuffle,Repeat,Volume2,VolumeX,ListMusic,X,Check,Music2,Upload,Headphones,ChevronDown,MoreHorizontal,Download,Globe2,User,LogOut,Disc3,Radio,CheckCircle2,Monitor,LayoutGrid};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icon=(name,extra='')=>`<i data-lucide="${name}" ${extra}></i>`;
 const refreshIcons=()=>createIcons({icons,attrs:{'stroke-width':1.7}});
 let library;try{library=safeLibrary(JSON.parse(localStorage.getItem('sonix-library')));}catch{library=initialLibrary();}
 let view='home', activeFilter='All', selectedMix=null, query='', user=null, queue=originals.map(t=>t.id), current=null, shuffle=false, repeat=false, installPrompt=null, playbackToken=0;
+let homeFilter='All',libraryQuery='',librarySort='recent',libraryLayout='list';
 let cloudTimer, searchTimer, toastTimer, objectUrl, cloudChain=Promise.resolve(), cloudLoading=false, cloudSynced=false;
 let youtubeApiKey=import.meta.env.VITE_YOUTUBE_API_KEY||'';try{localStorage.removeItem('sonix-jamendo-client-id');youtubeApiKey=sessionStorage.getItem('sonix-youtube-api-key')||youtubeApiKey;}catch{}
 const music=createMusicClient({youtubeApiKey}), musicRegistry=new Map();
@@ -67,15 +70,16 @@ $('#app').innerHTML=`
 
  <button class="account" data-action="account" aria-label="Your account"><span class="avatar">S</span><span id="account-label">Your personal space<small>Made for your ears only</small></span>${icon('chevron-down')}</button>
 </aside>
-<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><div class="top-actions"><button class="icon-button theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode">&#9728;</button></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>sanku inte lokham<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
+<div class="workspace"><header class="topbar"><div class="history-buttons"><button class="icon-button" data-action="back" aria-label="Go back">${icon('arrow-left')}</button><button class="icon-button" data-action="forward" aria-label="Go forward">${icon('arrow-right')}</button></div><div class="top-actions"></div></header><main id="main" tabindex="-1"></main><footer class="page-footer"><span>sanku inte lokham<span class="green">®</span></span><p>A little less noise. A little more music.</p><span>MADE FOR YOU</span></footer></div>
 <section id="youtube-panel" hidden aria-label="YouTube video player"><div class="video-toolbar"><button id="video-drag" aria-label="Move video player" title="Drag to move, or use arrow keys">&#10303; <span>YouTube &middot; drag to move</span></button><button class="icon-button" data-action="reset-video" aria-label="Reset video position" title="Reset position">&#8600;</button><button class="icon-button" data-action="close-video" aria-label="Pause and hide video" title="Pause and hide video">${icon('x')}</button></div><div class="video-frame"><div id="youtube-player"></div></div></section>
 <aside id="queue-panel" class="queue-panel" hidden></aside>
 <div class="player"><div class="now-playing"><button class="now-art" data-action="now-playing" aria-label="Show current collection"><img id="player-art" src="${artwork('night')}" alt="Current track artwork"/></button><div class="now-meta"><strong id="player-title">Your next favorite awaits</strong><span id="player-artist">Pick a track. Find your flow.</span></div><button id="player-like" class="icon-button" data-action="like-current" aria-label="Like current song">${icon('heart')}</button></div><div class="transport"><div class="transport-buttons"><button id="shuffle" class="icon-button" data-action="shuffle" aria-label="Shuffle" aria-pressed="false">${icon('shuffle')}</button><button class="icon-button" data-action="previous" aria-label="Previous song">${icon('skip-back')}</button><button id="play-toggle" class="play-toggle" data-action="toggle" aria-label="Play">${icon('play')}</button><button class="icon-button" data-action="next" aria-label="Next song">${icon('skip-forward')}</button><button id="repeat" class="icon-button" data-action="repeat" aria-label="Repeat" aria-pressed="false">${icon('repeat')}</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek position"/><span id="duration">0:00</span></div></div><div class="player-options"><button class="quality" data-action="quality" aria-label="Playback quality">Quality</button><button class="icon-button" data-action="queue" aria-label="Show queue">${icon('list-music')}</button><button class="icon-button" data-action="mute" id="mute" aria-label="Mute">${icon('volume-2')}</button><input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume"/></div></div>
-<nav class="mobile-nav"><button data-view="home">${icon('home')}Home</button><button data-view="search">${icon('search')}Search</button><button data-view="library">${icon('library')}Library</button><button data-action="account">${icon('user')}You</button></nav>
+<nav class="mobile-nav"><button data-view="home">${icon('home')}Home</button><button data-view="search">${icon('search')}Search</button><button data-view="library">${icon('library')}Library</button><button data-action="create-playlist">${icon('plus')}Create</button></nav>
 <dialog id="dialog"><button class="dialog-close icon-button" data-action="close-dialog" aria-label="Close">${icon('x')}</button><div id="dialog-content"></div></dialog><div id="toast" role="status" aria-live="polite"></div><input id="file-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg" multiple hidden/>`;
 
+try{if(!localStorage.getItem('sonix-clean-design')){localStorage.setItem('sonix-theme','dark');localStorage.setItem('sonix-clean-design','1');}}catch{}
 setupTheme();
-document.querySelector('.topbar').insertAdjacentHTML('afterbegin','<strong class="mobile-page-title">Your music</strong>');
+document.querySelector('.topbar').insertAdjacentHTML('afterbegin','<button class="mobile-profile" data-action="account" aria-label="Your account">S</button><strong class="mobile-page-title">Home</strong>');
 document.querySelector('.top-actions').insertAdjacentHTML('beforeend',`<button class="icon-button mobile-tools-toggle" data-action="mobile-tools" aria-label="More options">${icon('more-horizontal')}</button>`);
 
 for(const container of [document.querySelector('.player-options')]){
@@ -143,7 +147,7 @@ function renderConnect(){
  $('#dialog-content').innerHTML=`<div id="connect-devices"><span class="eyebrow">LISTEN ON</span><h2>Connect to a device</h2><p>${connectState.status==='online'?'Select a device. Every song you choose will play there.':connectState.status==='unavailable'?'Device connection is unavailable. Check your connection and try again.':'Finding your devices...'}</p><div class="dialog-playlists"><button class="secondary" data-connect-device="" aria-pressed="${!connectState.target}">This device<small>${connectState.target?'Play here instead':'Selected output'}</small></button>${connectState.devices.filter(d=>d.id!==connectState.id).map(d=>`<button class="secondary ${d.id===connectState.target?'selected-output':''}" data-connect-device="${esc(d.id)}" aria-pressed="${d.id===connectState.target}">${esc(d.name)}<small>${d.id===connectState.target?'Selected output': 'Available'}${d.title?' ? '+esc(d.title):''}</small></button>`).join('')}</div>${connectState.status==='online'&&connectState.devices.length<2?'<p>No other devices online. Open this app and sign into the same account on your other device.</p>':''}${remote?`<p class="connect-output">Connected to ${esc(remote.name)}. Choose a song anywhere in the app to play it there.</p>`:''}<p class="muted">Keep the app open on the receiving device. Its browser may need a tap on Play first. Imported files stay on their original device.</p></div>`;
 }
 
-const discovery=createDiscovery({music,registerMusicTracks,playTrack,esc,artwork,active:()=>Boolean(user)&&['home','music'].includes(view)});
+const discovery=createDiscovery({music,registerMusicTracks,playTrack,esc,artwork,active:()=>Boolean(user)&&(view==='music'||(view==='home'&&homeFilter!=='Playlists'))});
 
 function renderSidebar(){
  $('#like-count').textContent=`${library.favorites.length} songs`;
@@ -152,27 +156,22 @@ function renderSidebar(){
 function sectionHead(eyebrow,title,action='',label='View all'){return `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h2>${title}</h2></div>${action?`<button class="text-button" data-action="${action}">${label}${icon('arrow-right')}</button>`:''}</div>`;}
 function mixCard(m){return `<button class="mix-card" data-mix="${m.id}"><div class="mix-art"><img loading="lazy" src="${artwork(m.art)}" alt="${esc(m.name)} cover"/><div class="cover-brand">sanku inte lokham / SELECTS</div><span class="cover-tag">${m.tag}</span><strong style="color:${m.color}">${esc(m.name)}</strong><span class="card-play">${icon('play')}</span></div><h3>${m.name}</h3><p>${m.sub}</p></button>`;}
 function trackRows(list){return list.length?`<div class="track-table"><div class="track-table-head"><span>#</span><span>TITLE</span><span>ALBUM</span><span>TIME</span><span></span></div>${list.map((t,i)=>`<div class="track-row ${current?.id===t.id?'is-current':''}"><span class="track-number" aria-hidden="true">${current?.id===t.id?'♫':String(i+1).padStart(2,'0')}</span><button class="track-info" data-track="${esc(t.id)}"><img loading="lazy" src="${esc(t.artwork||artwork('flower'))}" alt=""/><span><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span></button><span class="track-album">${esc(t.album||'Your uploads')}</span><span class="track-duration">${time(t.duration)}</span><div class="track-actions"><button class="icon-button track-menu" data-queue-menu="${esc(t.id)}" aria-label="Queue options for ${esc(t.title)}">${icon('more-horizontal')}</button><button class="icon-button ${library.favorites.includes(t.id)?'active':''}" data-like="${esc(t.id)}" aria-label="${library.favorites.includes(t.id)?'Unlike':'Like'} ${esc(t.title)}">${icon('heart')}</button></div></div>`).join('')}</div>`:`<div class="empty-state">${icon('headphones')}<h3>Your soundtrack starts here</h3><p>Find songs in Search, or use More options to import your music.</p></div>`;}
+const cleanViews=createCleanViews({esc,icon,artwork,trackById});
 function render(){
- document.querySelector('.mobile-page-title').textContent=({home:'Your music',search:'Search',library:'Your library',liked:'Liked songs',music:'Discover',originals:'Originals',mix:'Made for you',playlist:'Your playlist'})[view]||'Your music';
+ document.querySelector('.mobile-page-title').textContent=({home:'Home',search:'Search',library:'Your library',liked:'Liked songs',music:'Discover',originals:'Originals',mix:'Made for you',playlist:'Your playlist'})[view]||'Your music';
  document.querySelectorAll('.mobile-nav [data-view]').forEach(button=>{if(button.dataset.view===view)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
  const keepSearchFocus=document.activeElement?.matches('#music-form input');
  const main=$('#main');
  main.dataset.view=view;
  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('selected',b.dataset.view===view));
  if(view==='home'){
- const visible=activeFilter==='All'?mixes:mixes.filter(m=>m.tracks.some(id=>trackById(id)?.mood===activeFilter));
- main.innerHTML=`<div class="greeting"><div><span class="eyebrow">YOUR WORLD, ON REPEAT</span><h1>A little music. A better day<span class="green">.</span></h1><p>Your favorites, fresh finds, and a little more you.</p></div><span class="date-pill">${icon('radio')}Tuned in to you</span></div>
- <div class="filter-row">${['All','Chill','Electronic','Focus','Ambient'].map(f=>`<button class="chip ${activeFilter===f?'chosen':''}" data-filter="${f}">${f}</button>`).join('')}</div>
- <section class="hero"><img class="hero-photo" src="${artwork('hero')}" alt="Atmospheric concert lights over a crowd" fetchpriority="high"/><div class="hero-shade"></div><div class="hero-copy"><span class="hero-label"><span></span>PICK YOUR MOOD</span><h2>Your world.<br/>On repeat.</h2><p>Songs for slow mornings and everything after.</p><div class="hero-actions"><button class="primary" data-action="play-featured">${icon('play')}Play the mix</button><button class="secondary" data-mix="night">Explore mix${icon('arrow-up-right')}</button></div></div><div class="hero-caption"><span>01 / 05</span><div><i></i><i></i><i></i><i></i><i></i></div><span>CURATED FOR YOUR EVERYDAY</span></div><span class="hero-vertical">PRESS PLAY. STAY A WHILE.</span></section>
- <section>${sectionHead('GOOD MUSIC. NO GUESSWORK.','Made for your mood','all-mixes','Explore all')}<div class="mix-grid">${visible.map(mixCard).join('')}</div></section>
- <section class="lower-grid"><div>${sectionHead('A LITTLE DISCOVERY','In heavy rotation','originals','View all')}${trackRows(originals.slice(0,4))}</div><div class="discovery-card"><span class="eyebrow">NO BORDERS. JUST MUSIC.</span><div class="globe-art">${icon('globe-2')}<span>ALL<br/>TOGETHER.</span></div><h3>A world worth listening to.</h3><p>Full tracks from independent artists.<br/>Your next discovery is out there.</p><button class="text-button" data-view="music">Explore music${icon('arrow-up-right')}</button></div></section>
- ${library.history.length?`<section>${sectionHead('WELCOME BACK','Recently played')}${trackRows(library.history.map(trackById).filter(Boolean).slice(0,4))}</section>`:''}`;
+  main.innerHTML=cleanViews.home(library,homeFilter);
  }else if(view==='search'){
- const results=allTracks().filter(t=>`${t.title} ${t.artist} ${t.album} ${t.mood||''}`.toLowerCase().includes(query.toLowerCase()));
- main.innerHTML=`<div class="page-heading"><span class="eyebrow">FOLLOW YOUR CURIOSITY</span><h1>${query?`Results for “${esc(query)}”`:'Find your sound.'}</h1><p>Search your songs, artists, albums, and moods.</p></div>${trackRows(results)}<section>${sectionHead('TAKE A DIFFERENT ROUTE','Browse your moods')}<div class="mix-grid">${mixes.map(mixCard).join('')}</div></section>`;
+  const results=query?library.tracks.filter(t=>(t.title+' '+t.artist).toLocaleLowerCase().includes(query.toLocaleLowerCase())):[];
+  main.innerHTML=cleanViews.search(query,results,trackRows);
  }else if(view==='library'){
- main.dataset.tracks='[]';
- main.innerHTML=`<div class="page-heading"><span class="eyebrow">YOUR COLLECTION</span><h1>Your library</h1><p>Your saved playlists and liked songs.</p></div><section aria-label="Saved playlists">${sectionHead('MADE BY YOU','Your playlists','create-playlist','Create playlist')}<div class="playlist-grid"><button data-view="liked" class="playlist-tile">${icon('heart')}<h3>Liked songs</h3><p>${library.favorites.length} songs</p></button>${library.playlists.map(p=>`<button data-playlist="${esc(p.id)}" class="playlist-tile">${icon('list-music')}<h3>${esc(p.name)}</h3><p>${p.tracks.length} songs</p></button>`).join('')}</div>${library.playlists.length?'':'<p class="muted">Your saved playlists will appear here. Create a playlist to get started.</p>'}</section>`;
+  main.dataset.tracks='[]';
+  main.innerHTML=cleanViews.library(library,{query:libraryQuery,sort:librarySort,layout:libraryLayout});
  }else if(view==='liked'||view==='originals'||view==='mix'||view==='playlist'){
 
  let title='Your library',label='ALL YOUR FAVORITES, IN ONE PLACE',description='A collection that is completely you.',list=allTracks(),art='flower';
@@ -185,11 +184,13 @@ function render(){
  }else if(view==='music'){
  main.innerHTML=`<div class="page-heading"><span class="eyebrow">YOUTUBE MUSIC</span><h1>Full songs. Fresh discoveries<span class="green">.</span></h1><p>Explore the YouTube catalog, stream full tracks, and save your favorites.</p></div>`;
  }
- if(['home','search','music'].includes(view))renderMusic();
+ if(view==='music'||(view==='home'&&homeFilter!=='Playlists')||(view==='search'&&query))renderMusic();
  refreshIcons();updatePlayer();if(keepSearchFocus)$('#music-form input')?.focus();
 }
 function renderMusic(){
- if(!user)return;
+ if(!user||(view==='home'&&homeFilter==='Playlists')||(view==='search'&&!query))return;
+ if(view==='home'&&musicState.query){loadMusic('');return;}
+ if(view==='search'&&query!==musicState.query){loadMusic(query);return;}
  discovery.mount();
  let section=$('#music-section');if(!section){section=document.createElement('section');section.id='music-section';section.className='music-section';const anchor=view==='home'?$('#main .hero'):$('#main .page-heading');anchor?.insertAdjacentElement('afterend',section);}
  const discoverySection=$('#language-discovery');if(discoverySection)section.before(discoverySection);
@@ -211,6 +212,8 @@ function updatePlayer(){
  expandedPlayer.update();
  lyrics.update();
  const remote=connectState.devices.find(d=>d.id===connectState.target);
+ document.querySelector('.player').classList.toggle('has-track',Boolean(current||remote));
+ document.documentElement.classList.toggle('has-current-track',Boolean(current||remote));
  document.querySelectorAll('[data-action="shuffle"]').forEach(button=>{button.disabled=Boolean(remote);button.classList.toggle('active',shuffle);button.setAttribute('aria-pressed',String(shuffle));});$('#player-like').disabled=Boolean(remote);$('#shuffle').disabled=Boolean(remote);$('#repeat').disabled=Boolean(remote);
  if(remote){
   $('#player-title').textContent=remote.title||'Choose a song to play there';$('#player-artist').textContent='Connected to '+remote.name;
@@ -317,8 +320,11 @@ document.addEventListener('click',async e=>{
  if(b.dataset.removeQueue){manualQueue=manualQueue.filter(id=>id!==b.dataset.removeQueue);if(b.dataset.removeQueue!==current?.id)queue=queue.filter(id=>id!==b.dataset.removeQueue);saveSession();renderQueue();return;}
  if(b.dataset.sleepMinutes){setSleep({deadline:Date.now()+Number(b.dataset.sleepMinutes)*60000});return;}
  if(b.hasAttribute('data-connect-device')){try{const previous=connect.target;if(previous&&previous!==b.dataset.connectDevice)await remoteCommand({type:'pause'});connect.select(b.dataset.connectDevice);if(connect.target)audio.pause();$('#dialog').close();toast(connect.target?'Connected. Choose a song to play on '+(connectState.devices.find(d=>d.id===connect.target)?.name||'your device'):'Songs will now play on this device');}catch(error){toast(error.message);}return;}
+ if(b.dataset.homeFilter){homeFilter=b.dataset.homeFilter;render();return;}
+ if(b.dataset.browseQuery){query=b.dataset.browseQuery;navigate('search');return;}
  const a=b.dataset.action;
- if(a==='mobile-tools')openDialog(`<h2>More options</h2><div class="mobile-tools"><button class="secondary" data-action="connect">${icon('monitor')}Connect to a device</button><button class="secondary" data-action="sleep">${icon('headphones')}<span id="sleep-label">Sleep timer</span></button><button class="secondary" data-action="import">${icon('upload')}Import music</button><button class="secondary" data-action="connect-youtube">${icon('globe-2')}Music source settings</button>${isNative?'':'<button class="secondary" data-action="install">Install app</button>'}</div>`);
+ if(a==='library-layout'){libraryLayout=libraryLayout==='list'?'grid':'list';render();return;}
+ if(a==='mobile-tools')openDialog(`<h2>More options</h2><div class="mobile-tools"><button class="secondary theme-menu" data-theme-toggle aria-label="Switch color theme">${icon('disc-3')}Switch color theme</button><button class="secondary" data-action="connect">${icon('monitor')}Connect to a device</button><button class="secondary" data-action="sleep">${icon('headphones')}<span id="sleep-label">Sleep timer</span></button><button class="secondary" data-action="import">${icon('upload')}Import music</button><button class="secondary" data-action="connect-youtube">${icon('globe-2')}Music source settings</button>${isNative?'':'<button class="secondary" data-action="install">Install app</button>'}</div>`);
  if(a==='connect'){openDialog('<div id="connect-devices"></div>');renderConnect();}
 
  if(a==='sleep')sleepDialog();
@@ -370,11 +376,12 @@ document.addEventListener('click',async e=>{
   }finally{b.disabled=false;}
  }
 });
-document.addEventListener('change',e=>{if(e.target.id==='music-sort')loadMusic(musicState.query,0,e.target.value);});
+document.addEventListener('input',e=>{if(e.target.matches('#music-form input')&&!e.target.value&&query){query='';render();$('#music-form input')?.focus();return;}if(e.target.id==='library-filter'){const position=e.target.selectionStart;libraryQuery=e.target.value;render();const field=$('#library-filter');field.focus();field.setSelectionRange(position,position);}});
+document.addEventListener('change',e=>{if(e.target.id==='library-sort'){librarySort=e.target.value;render();return;}if(e.target.id==='music-sort')loadMusic(musicState.query,0,e.target.value);});
 document.addEventListener('submit',async e=>{
  if(e.target.id==='sleep-form'){e.preventDefault();const minutes=Number(new FormData(e.target).get('minutes'));if(Number.isInteger(minutes)&&minutes>=1&&minutes<=180)setSleep({deadline:Date.now()+minutes*60000});return;}
  if(e.target.id==='youtube-form'){e.preventDefault();const value=String(new FormData(e.target).get('apiKey')).trim();if(!/^[A-Za-z0-9_-]{4,100}$/.test(value)){toast('Enter a valid YouTube API key.');return;}youtubeApiKey=value;try{sessionStorage.setItem('sonix-youtube-api-key',value);}catch{}music.setYoutubeApiKey(value);$('#dialog').close();loadMusic('');return;}
- if(e.target.id==='music-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2){query=q;navigate('search');loadMusic(q);}return;}
+ if(e.target.id==='music-form'){e.preventDefault();const q=String(new FormData(e.target).get('query')).trim();if(q.length>=2){query=q;navigate('search');}return;}
  if(e.target.id==='playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;const p={id:crypto.randomUUID(),name,tracks:e.target.dataset.trackId?[e.target.dataset.trackId]:[]};library.playlists.push(p);persist();$('#dialog').close();navigate('playlist',p.id);toast('Your new playlist is ready');}
  if(e.target.id==='edit-playlist-form'){e.preventDefault();const name=new FormData(e.target).get('name').trim();if(!name)return;library.playlists.find(p=>p.id===selectedMix).name=name;persist();$('#dialog').close();render();}
 
@@ -386,7 +393,7 @@ document.addEventListener('keydown',e=>{if(!user)return;if(['INPUT','TEXTAREA','
 $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog'))$('#dialog').close();});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 if('mediaSession' in navigator){for(const [action,fn] of Object.entries({play:()=>{if(audio.paused)toggle();},pause:()=>audio.pause(),previoustrack:()=>step(-1),nexttrack:()=>step(1),seekto:d=>{if(Number.isFinite(audio.duration))audio.currentTime=d.seekTime;}})){try{navigator.mediaSession.setActionHandler(action,fn);}catch{}}}
-function updateAccount(){$('#account-label').innerHTML=user?`${esc(user.email?.split('@')[0])}<small>${cloudSynced?'Personal cloud connected':'Signed in · sync pending'}</small>`:'Your personal space<small>Made for your ears only</small>';}
+function updateAccount(){const profile=$('.mobile-profile');if(profile)profile.textContent=(user?.email||'S')[0].toUpperCase();$('#account-label').innerHTML=user?`${esc(user.email?.split('@')[0])}<small>${cloudSynced?'Personal cloud connected':'Signed in · sync pending'}</small>`:'Your personal space<small>Made for your ears only</small>';}
 async function syncAccount(){
  if(!user)return;const id=user.id;cloudLoading=true;cloudSynced=false;clearTimeout(cloudTimer);
  try{
